@@ -270,8 +270,8 @@
       box-shadow:0 0 12px rgba(255,19,19,0.5),inset 0 1px 0 rgba(255,255,255,0.2);
     }
     .bar-fill.inflow{
-      background:linear-gradient(90deg,#00FFCC 0%,#33FFD4 50%,#66FFE0 100%);
-      box-shadow:0 0 12px rgba(0,255,204,0.4),inset 0 1px 0 rgba(255,255,255,0.2);
+      background:linear-gradient(90deg,#00E5FF 0%,#33EBFF 50%,#66F0FF 100%);
+      box-shadow:0 0 12px rgba(0,229,255,0.4),inset 0 1px 0 rgba(255,255,255,0.2);
     }
     .bar-fill::after{
       content:'';position:absolute;
@@ -287,7 +287,7 @@
       color:#fff;
     }
     .bar-row.outflow-row .bar-value{color:#FF6666}
-    .bar-row.inflow-row .bar-value{color:#00FFCC}
+    .bar-row.inflow-row .bar-value{color:#00E5FF}
     .bar-change{
       width:24px;text-align:center;
       font-size:8px;margin-left:4px;
@@ -304,7 +304,7 @@
       text-align:center;
     }
     .kpi-num{color:#FF1313;font-size:14px;font-weight:bold}
-    .kpi-num.cyan{color:#00FFCC}
+    .kpi-num.cyan{color:#00E5FF}
     .kpi-label{color:#00CCFF;font-size:7px;opacity:0.6;margin-top:2px}
     
     /* COUNTRY DETAIL VIEW - hidden, using inline panel instead */
@@ -375,7 +375,7 @@
       border-radius:2px 2px 0 0;
       transition:height 0.5s ease;
     }
-    .trend-bar.mint{background:linear-gradient(180deg,#00FFCC,#66FFE0)}
+    .trend-bar.mint{background:linear-gradient(180deg,#00E5FF,#66F0FF)}
     .trend-year{
       font-size:9px;color:rgba(255,255,255,0.4);
       margin-top:8px;
@@ -1208,9 +1208,9 @@ function createDots() {
   // Create textures - Cyber Mint for inflow (#00FFCC)
   var glowTexWhite = createGlowTexture('rgba(255,255,255,1)', 0.15);
   var glowTexRed = createGlowTexture('rgba(255,50,50,1)', 0.3);       // Outflow (emigration)
-  var glowTexMint = createGlowTexture('rgba(0,255,204,1)', 0.3);      // Cyber Mint for inflow
+  var glowTexMint = createGlowTexture('rgba(0,229,255,1)', 0.3);      // Fluorescent Sky Blue for inflow
   var glowTexRedSoft = createGlowTexture('rgba(255,100,100,1)', 0.5);
-  var glowTexMintSoft = createGlowTexture('rgba(0,255,200,1)', 0.5);
+  var glowTexMintSoft = createGlowTexture('rgba(0,220,255,1)', 0.5);
   
   var dotGeo = new THREE.PlaneGeometry(1, 1);
   
@@ -1229,9 +1229,9 @@ function createDots() {
     var pos = latLngToVec3(loc.lat, loc.lng, CONFIG.globeRadius, 0.5);
     var intensity = migrationIntensity[loc.name] || 0.2;
     
-    // Type 2 = Outflow (RED), Type 1 = Inflow (CYBER MINT #00FFCC)
+    // Type 2 = Outflow (RED), Type 1 = Inflow (Fluorescent Sky Blue #00E5FF)
     var isOutflow = loc.type === 2;
-    var dotColor = isOutflow ? 0xff3333 : 0x00ffcc;  // Cyber mint
+    var dotColor = isOutflow ? 0xff3333 : 0x00e5ff;  // Fluorescent sky blue
     var dotTex = isOutflow ? glowTexRed : glowTexMint;
     
     var dotMat = new THREE.MeshBasicMaterial({
@@ -1282,8 +1282,8 @@ function createDots() {
     // Add extra glow layers for high-intensity hubs
     if (intensity > 0.5) {
       var glowTex = isOutflow ? glowTexRedSoft : glowTexMintSoft;
-      var glowColor1 = isOutflow ? 0xff4444 : 0x00ddaa;
-      var glowColor2 = isOutflow ? 0xff2222 : 0x00ffcc;
+      var glowColor1 = isOutflow ? 0xff4444 : 0x00c8ff;
+      var glowColor2 = isOutflow ? 0xff2222 : 0x00e5ff;
       
       // Medium glow - color based on type
       var glowMat1 = new THREE.MeshBasicMaterial({
@@ -1354,9 +1354,9 @@ function createArcsSnake() {
   var origins = LOCATIONS.filter(function(l) { return l.type === 2; });
   var dests = LOCATIONS.filter(function(l) { return l.type === 1; });
   
-  // Red to Mint gradient colors
+  // Red to Fluorescent Sky Blue gradient colors
   var colorStart = new THREE.Color(0xff3333); // Red
-  var colorEnd = new THREE.Color(0x00FFCC);   // Cyber Mint
+  var colorEnd = new THREE.Color(0x00E5FF);   // Fluorescent Sky Blue
   
   origins.forEach(function(origin) {
     var countryKey = origin.name.toLowerCase();
@@ -1899,7 +1899,7 @@ function updatePanelWithCountry(country) {
   document.getElementById('panel-country-header').style.display = 'block';
   document.getElementById('panel-country-name').textContent = data.name;
   document.getElementById('panel-country-status').textContent = data.type === 'outflow' ? 'OUTFLOW CRISIS' : 'INFLOW';
-  document.getElementById('panel-country-status').style.background = data.type === 'outflow' ? '#ff3333' : '#00FFCC';
+  document.getElementById('panel-country-status').style.background = data.type === 'outflow' ? '#ff3333' : '#00E5FF';
   document.getElementById('panel-country-status').style.color = data.type === 'outflow' ? '#fff' : '#000';
   
   // Update KPI
@@ -1920,7 +1920,7 @@ function updatePanelWithCountry(country) {
   var maxVal = Math.max.apply(null, data.trend);
   data.trend.forEach(function(val) {
     var h = maxVal > 0 ? (val / maxVal * 40) : 0;
-    var barColor = data.type === 'outflow' ? '#ff3333' : '#00FFCC';
+    var barColor = data.type === 'outflow' ? '#ff3333' : '#00E5FF';
     chartHtml += '<div style="flex:1;height:' + h + 'px;background:' + barColor + ';border-radius:1px"></div>';
   });
   document.getElementById('panel-trend-chart').innerHTML = chartHtml;
