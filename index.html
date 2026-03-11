@@ -1008,11 +1008,14 @@
 <script type="x-shader/x-vertex" id="line_vertex">
   attribute float alpha;
   attribute vec3 arcColor;
+  attribute float lineIndex;
   varying float vAlpha;
   varying vec3 vColor;
+  varying float vLineIndex;
   void main() {
     vAlpha = alpha;
     vColor = arcColor;
+    vLineIndex = lineIndex;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mvPosition;
   }
@@ -1020,11 +1023,25 @@
 <script type="x-shader/x-fragment" id="line_fragment">
   varying float vAlpha;
   varying vec3 vColor;
+  varying float vLineIndex;
   uniform vec3 fogColor;
   uniform float fogNear;
   uniform float fogFar;
+  uniform float uTime;
   void main() {
-    gl_FragColor = vec4(vColor, vAlpha);
+    // Flowing dashed line effect
+    float dashSize = 0.15;
+    float gapSize = 0.1;
+    float pattern = mod(vLineIndex - uTime * 0.5, dashSize + gapSize);
+    float dash = step(pattern, dashSize);
+    
+    // Smooth edges
+    float edgeSoftness = 0.02;
+    dash = smoothstep(0.0, edgeSoftness, pattern) * (1.0 - smoothstep(dashSize - edgeSoftness, dashSize, pattern));
+    
+    if (dash < 0.1) discard;
+    
+    gl_FragColor = vec4(vColor, vAlpha * dash);
     #ifdef USE_FOG
       #ifdef USE_LOGDEPTHBUF_EXT
         float depth = gl_FragDepthEXT / gl_FragCoord.w;
@@ -1850,6 +1867,7 @@ function createArcsFromFlows() {
     var countryVerts = [];
     var countryColors = [];
     var countryDetails = [];
+    var countryLineIdx = [];
     
     // Sort flows by size and take top destinations
     flows.sort(function(a,b){return b.total - a.total;});
@@ -1895,6 +1913,8 @@ function createArcsFromFlows() {
           var c2 = new THREE.Color().lerpColors(colorStart, colorEnd, t2);
           countryColors.push(c1.r, c1.g, c1.b);
           countryColors.push(c2.r, c2.g, c2.b);
+          // Line index for dashed animation (0 to 1 along arc)
+          countryLineIdx.push(t1, t2);
         }
       }
     });
@@ -1904,23 +1924,26 @@ function createArcsFromFlows() {
       var pos = new Float32Array(countryVerts.length * 3);
       var col = new Float32Array(countryColors);
       var alp = new Float32Array(countryVerts.length);
+      var idx = new Float32Array(countryLineIdx);
       
       for (var i = 0; i < countryVerts.length; i++) {
         pos[i*3] = countryVerts[i].x;
         pos[i*3+1] = countryVerts[i].y;
         pos[i*3+2] = countryVerts[i].z;
-        alp[i] = 0.7;
+        alp[i] = 1.0;
       }
       
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
       geo.setAttribute('arcColor', new THREE.BufferAttribute(col, 3));
       geo.setAttribute('alpha', new THREE.BufferAttribute(alp, 1));
+      geo.setAttribute('lineIndex', new THREE.BufferAttribute(idx, 1));
       
       var mat = new THREE.ShaderMaterial({
         uniforms: {
           fogColor: {value: scene.fog.color},
           fogNear: {value: scene.fog.near},
-          fogFar: {value: scene.fog.far}
+          fogFar: {value: scene.fog.far},
+          uTime: {value: 0}
         },
         vertexShader: document.getElementById('line_vertex').textContent,
         fragmentShader: document.getElementById('line_fragment').textContent,
@@ -2335,28 +2358,25 @@ function animate() {
   rotationObject.rotation.x += (targetRotationX - rotationObject.rotation.x) * 0.1;
   rotationObject.rotation.y += (targetRotationY - rotationObject.rotation.y) * 0.1;
   
-  // Arc snake animation (time-based wave)
+  // Arc snake animation - flowing dashed lines
   if (arcSnakeAnim && arcSnakeAnim.running) {
     arcSnakeAnim.time += 0.016 * arcSnakeAnim.speed;
     
     arcSnakeObject.children.forEach(function(mesh) {
       if (!mesh.visible) return;
-      var attrs = mesh.geometry.attributes;
-      var details = mesh.userData.details;
-      var isFiltered = mesh.userData.filtered;
       
-      for (var i = 0; i < details.length; i++) {
-        // Wave function: sin creates smooth pulse
-        var wave = Math.sin((arcSnakeAnim.time - details[i].phase) * 2);
-        // Clamp to 0-1 range, only show positive part of wave
-        var alpha = Math.max(0, wave);
-        // Make arcs always clearly visible
-        if (isFiltered) {
-          alpha = 0.8 + alpha * 0.2; // Range: 0.8 to 1.0 (very bright)
-        } else if (currentFilterISO === 'ALL') {
-          alpha = 0.5 + alpha * 0.5; // Range: 0.5 to 1.0 (visible)
-        }
-        attrs.alpha.array[i] = alpha;
+      // Update uTime for dashed line animation
+      if (mesh.material.uniforms && mesh.material.uniforms.uTime) {
+        mesh.material.uniforms.uTime.value = arcSnakeAnim.time;
+      }
+      
+      // Update alpha based on filter state
+      var attrs = mesh.geometry.attributes;
+      var isFiltered = mesh.userData.filtered;
+      var baseAlpha = isFiltered ? 1.0 : (currentFilterISO === 'ALL' ? 0.85 : 0.3);
+      
+      for (var i = 0; i < attrs.alpha.array.length; i++) {
+        attrs.alpha.array[i] = baseAlpha;
       }
       attrs.alpha.needsUpdate = true;
     });
