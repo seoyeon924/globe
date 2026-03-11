@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>GLOBAL MIGRATION</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Michroma&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
     body{
       background:#0a0a0a;
       color:#ffffff;
       overflow:hidden;
-      font-family:'Inter',system-ui,sans-serif;
+      font-family:'Michroma',system-ui,sans-serif;
       text-transform:uppercase;
     }
     a{color:#00CCFF;text-decoration:none;transition:color 0.3s}
@@ -51,21 +51,21 @@
       text-decoration:none;
     }
     #header strong{
-      font-family:'Bebas Neue',sans-serif;
-      font-size:72px;
+      font-family:'Michroma',sans-serif;
+      font-size:48px;
       letter-spacing:4px;
       color:#fff;
-      line-height:0.9;
+      line-height:1.1;
       display:block;
     }
     #header .subtitle{
-      font-family:'Inter',sans-serif;
-      font-weight:300;
-      font-size:14px;
+      font-family:'Michroma',sans-serif;
+      font-weight:400;
+      font-size:10px;
       color:rgba(255,255,255,0.5);
       margin-top:12px;
       text-transform:none;
-      letter-spacing:0;
+      letter-spacing:1px;
     }
     
     /* Navigation */
@@ -109,8 +109,8 @@
     /* GOD'S EYE HUD PANELS */
     .hud-panel{
       position:fixed;
-      font-family:'Courier New',monospace;
-      font-size:10px;
+      font-family:'Michroma',sans-serif;
+      font-size:9px;
       text-transform:uppercase;
       letter-spacing:1px;
       pointer-events:auto;
@@ -178,8 +178,8 @@
       position:fixed;top:50%;right:20px;
       transform:translateY(-50%);
       width:200px;padding:12px 14px;
-      font-family:'Courier New',monospace;
-      font-size:10px;text-transform:uppercase;
+      font-family:'Michroma',sans-serif;
+      font-size:9px;text-transform:uppercase;
       letter-spacing:0.5px;
       border:1px solid rgba(0,204,255,0.25);
       background:rgba(0,0,0,0.7);
@@ -209,8 +209,8 @@
       width:100%;padding:4px 6px;
       background:#0a1a20;color:#00CCFF;
       border:1px solid rgba(0,204,255,0.3);
-      font-family:'Courier New',monospace;
-      font-size:9px;text-transform:uppercase;
+      font-family:'Michroma',sans-serif;
+      font-size:8px;text-transform:uppercase;
       cursor:pointer;outline:none;
     }
     .hud-select:focus{border-color:#00CCFF}
@@ -283,8 +283,8 @@
     }
     .bar-value{
       width:40px;text-align:right;
-      font-family:'Bebas Neue',sans-serif;
-      font-size:16px;letter-spacing:1px;
+      font-family:'Michroma',sans-serif;
+      font-size:11px;letter-spacing:0.5px;
       color:#fff;
     }
     .bar-row.outflow-row .bar-value{color:#FF6666}
@@ -320,8 +320,8 @@
       margin-bottom:30px;
     }
     .detail-country{
-      font-family:'Bebas Neue',sans-serif;
-      font-size:120px;color:#fff;
+      font-family:'Michroma',sans-serif;
+      font-size:72px;color:#fff;
       line-height:1;letter-spacing:4px;
     }
     .detail-status{
@@ -342,8 +342,8 @@
       padding:20px;text-align:center;
     }
     .detail-kpi-num{
-      font-family:'Bebas Neue',sans-serif;
-      font-size:48px;color:#ff3333;
+      font-family:'Michroma',sans-serif;
+      font-size:32px;color:#ff3333;
     }
     .detail-kpi-num.green{color:#33ff66}
     .detail-kpi-label{
@@ -605,7 +605,7 @@
     
     <!-- Country Title (shown when selected) -->
     <div id="panel-country-header" style="display:none;margin-bottom:12px">
-      <div id="panel-country-name" style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;letter-spacing:2px"></div>
+      <div id="panel-country-name" style="font-family:'Michroma',sans-serif;font-size:20px;color:#fff;letter-spacing:2px"></div>
       <div id="panel-country-status" style="display:inline-block;padding:2px 8px;background:#ff3333;color:#fff;font-size:8px;margin-top:4px"></div>
     </div>
     
@@ -1441,45 +1441,29 @@ function createArcsSnake() {
     }
   });
   
-  // Create animations - all countries animate together
-  arcSnakeAnim = gsap.timeline({paused: true, repeat: -1, onUpdate: function() {
-    arcSnakeObject.children.forEach(function(mesh) {
-      if (!mesh.visible) return;
-      var attrs = mesh.geometry.attributes;
-      var details = mesh.userData.details;
-      for (var i = 0; i < details.length; i++) {
-        attrs.alpha.array[i] = details[i].alpha;
-      }
-      attrs.alpha.needsUpdate = true;
-    });
-  }});
+  // Simple continuous animation using time-based alpha
+  arcSnakeAnim = {
+    time: 0,
+    speed: 2.0,
+    play: function() { this.running = true; },
+    pause: function() { this.running = false; },
+    running: false
+  };
   
-  // Group points by arc segment (every arcDivisions points = 1 arc)
-  var segmentSize = CONFIG.arcDivisions;
-  
+  // Store segment info for animation
   arcSnakeObject.children.forEach(function(mesh, countryIdx) {
     var details = mesh.userData.details;
+    var segmentSize = CONFIG.arcDivisions;
     var numSegments = Math.floor(details.length / segmentSize);
     
-    for (var seg = 0; seg < numSegments; seg++) {
-      // Each segment (arc) starts at a different time, cycling continuously
-      var segmentDelay = (countryIdx * 0.3) + (seg * 0.08);
-      
-      for (var pt = 0; pt < segmentSize; pt++) {
-        var idx = seg * segmentSize + pt;
-        if (idx < details.length) {
-          var d = details[idx];
-          // Snake effect: each point in segment lights up slightly after previous
-          var pointDelay = segmentDelay + (pt * 0.02);
-          arcSnakeAnim.to(d, {alpha: 1, duration: 0.1}, pointDelay);
-          arcSnakeAnim.to(d, {alpha: 0, duration: 0.3}, pointDelay + 0.15);
-        }
-      }
+    // Assign each point a phase offset for wave animation
+    for (var i = 0; i < details.length; i++) {
+      var segIdx = Math.floor(i / segmentSize);
+      var ptIdx = i % segmentSize;
+      // Phase based on segment and point position
+      details[i].phase = (countryIdx * 0.7) + (segIdx * 0.3) + (ptIdx * 0.08);
     }
   });
-  
-  // Speed up the timeline
-  arcSnakeAnim.timeScale(1.5);
 }
 
 // Filter arcs by country
@@ -1795,6 +1779,26 @@ function animate() {
   // Smooth interpolation
   rotationObject.rotation.x += (targetRotationX - rotationObject.rotation.x) * 0.1;
   rotationObject.rotation.y += (targetRotationY - rotationObject.rotation.y) * 0.1;
+  
+  // Arc snake animation (time-based wave)
+  if (arcSnakeAnim && arcSnakeAnim.running) {
+    arcSnakeAnim.time += 0.016 * arcSnakeAnim.speed;
+    
+    arcSnakeObject.children.forEach(function(mesh) {
+      if (!mesh.visible) return;
+      var attrs = mesh.geometry.attributes;
+      var details = mesh.userData.details;
+      
+      for (var i = 0; i < details.length; i++) {
+        // Wave function: sin creates smooth pulse
+        var wave = Math.sin((arcSnakeAnim.time - details[i].phase) * 2);
+        // Clamp to 0-1 range, only show positive part of wave
+        var alpha = Math.max(0, wave);
+        attrs.alpha.array[i] = alpha;
+      }
+      attrs.alpha.needsUpdate = true;
+    });
+  }
   
   renderer.render(scene, camera);
 }
