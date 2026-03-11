@@ -550,7 +550,7 @@
   
   <div id="header">
     <div><strong>MIGRATION<br>TRACKER</strong></div>
-    <div class="subtitle">Global refugee and displacement flows. Data: UNHCR Mid-2024</div>
+    <div class="subtitle">Global refugee and displacement flows. Data: UNHCR 2020-2025</div>
     <a href="https://www.linkedin.com/in/seoyeonjun/" target="_blank" style="font-size:9px;color:#00CCFF;opacity:0.7;margin-top:8px;display:inline-block">by Seoyeon Jun</a>
   </div>
   
@@ -903,42 +903,306 @@ var colorBase85 = new THREE.Color('#081f26');
 var colorAccent = new THREE.Color(colorHighlight);
 
 // ============== DATA ==============
-// Central hub (like Shane's Toronto)
-var HUB = {lat: 35.0, lng: 38.0, name: 'Syria'}; // Main origin
+// ISO3 -> Coordinates lookup
+var COUNTRY_COORDS = {
+  AFG:{lat:34.5,lng:69.2,name:'Afghanistan'},SYR:{lat:35.0,lng:38.0,name:'Syria'},
+  UKR:{lat:50.4,lng:30.5,name:'Ukraine'},VEN:{lat:10.5,lng:-66.9,name:'Venezuela'},
+  SDN:{lat:15.5,lng:32.5,name:'Sudan'},MMR:{lat:16.0,lng:96.0,name:'Myanmar'},
+  BFA:{lat:12.0,lng:-1.5,name:'Burkina Faso'},COD:{lat:-4.3,lng:15.3,name:'DR Congo'},
+  SSD:{lat:4.9,lng:31.6,name:'South Sudan'},SOM:{lat:2.0,lng:45.3,name:'Somalia'},
+  ERI:{lat:15.3,lng:38.9,name:'Eritrea'},CAF:{lat:6.6,lng:20.9,name:'Central African Rep'},
+  YEM:{lat:15.5,lng:48.5,name:'Yemen'},MLI:{lat:17.6,lng:-4.0,name:'Mali'},
+  NGA:{lat:9.1,lng:7.5,name:'Nigeria'},IRQ:{lat:33.3,lng:44.4,name:'Iraq'},
+  PAK:{lat:33.7,lng:73.1,name:'Pakistan'},IRN:{lat:35.7,lng:51.4,name:'Iran'},
+  DEU:{lat:52.5,lng:13.4,name:'Germany'},FRA:{lat:48.9,lng:2.4,name:'France'},
+  GBR:{lat:51.5,lng:-0.1,name:'UK'},ITA:{lat:41.9,lng:12.5,name:'Italy'},
+  ESP:{lat:40.4,lng:-3.7,name:'Spain'},POL:{lat:52.2,lng:21.0,name:'Poland'},
+  SWE:{lat:59.3,lng:18.1,name:'Sweden'},NLD:{lat:52.4,lng:4.9,name:'Netherlands'},
+  AUT:{lat:48.2,lng:16.4,name:'Austria'},TUR:{lat:41.0,lng:29.0,name:'Turkey'},
+  LBN:{lat:33.9,lng:35.5,name:'Lebanon'},JOR:{lat:31.9,lng:35.9,name:'Jordan'},
+  USA:{lat:40.7,lng:-74.0,name:'USA'},CAN:{lat:43.7,lng:-79.4,name:'Canada'},
+  COL:{lat:4.6,lng:-74.1,name:'Colombia'},BRA:{lat:-23.6,lng:-46.6,name:'Brazil'},
+  AUS:{lat:-33.9,lng:151.2,name:'Australia'},UGA:{lat:0.3,lng:32.6,name:'Uganda'},
+  KEN:{lat:-1.3,lng:36.8,name:'Kenya'},ETH:{lat:9.0,lng:38.7,name:'Ethiopia'},
+  EGY:{lat:30.0,lng:31.2,name:'Egypt'},ZAF:{lat:-25.7,lng:28.2,name:'South Africa'},
+  RWA:{lat:-1.9,lng:29.9,name:'Rwanda'},TZA:{lat:-6.2,lng:35.7,name:'Tanzania'},
+  CHE:{lat:46.9,lng:7.4,name:'Switzerland'},BEL:{lat:50.8,lng:4.4,name:'Belgium'},
+  GRC:{lat:37.98,lng:23.7,name:'Greece'},RUS:{lat:55.75,lng:37.6,name:'Russia'},
+  MEX:{lat:19.4,lng:-99.1,name:'Mexico'},CHL:{lat:-33.4,lng:-70.6,name:'Chile'},
+  PER:{lat:-12.0,lng:-77.0,name:'Peru'},ARG:{lat:-34.6,lng:-58.4,name:'Argentina'},
+  TCD:{lat:12.1,lng:15.0,name:'Chad'},CMR:{lat:3.9,lng:11.5,name:'Cameroon'},
+  NER:{lat:13.5,lng:2.1,name:'Niger'},MRT:{lat:18.1,lng:-15.9,name:'Mauritania'},
+  BGD:{lat:23.8,lng:90.4,name:'Bangladesh'},MYS:{lat:3.1,lng:101.7,name:'Malaysia'},
+  THA:{lat:13.75,lng:100.5,name:'Thailand'},IND:{lat:20.6,lng:78.96,name:'India'},
+  CHN:{lat:39.9,lng:116.4,name:'China'},JPN:{lat:35.7,lng:139.7,name:'Japan'},
+  KOR:{lat:37.6,lng:127.0,name:'South Korea'},IDN:{lat:-6.2,lng:106.8,name:'Indonesia'},
+  NOR:{lat:59.9,lng:10.75,name:'Norway'},DNK:{lat:55.7,lng:12.6,name:'Denmark'},
+  FIN:{lat:60.2,lng:24.9,name:'Finland'},HUN:{lat:47.5,lng:19.0,name:'Hungary'},
+  CZE:{lat:50.1,lng:14.4,name:'Czechia'},ROU:{lat:44.4,lng:26.1,name:'Romania'},
+  BGR:{lat:42.7,lng:23.3,name:'Bulgaria'},SRB:{lat:44.8,lng:20.5,name:'Serbia'},
+  HRV:{lat:45.8,lng:16.0,name:'Croatia'},SVN:{lat:46.1,lng:14.5,name:'Slovenia'},
+  SVK:{lat:48.1,lng:17.1,name:'Slovakia'},PRT:{lat:38.7,lng:-9.1,name:'Portugal'},
+  IRL:{lat:53.3,lng:-6.26,name:'Ireland'},ISR:{lat:32.1,lng:34.8,name:'Israel'},
+  SAU:{lat:24.7,lng:46.7,name:'Saudi Arabia'},ARE:{lat:24.5,lng:54.4,name:'UAE'},
+  KWT:{lat:29.4,lng:47.98,name:'Kuwait'},QAT:{lat:25.3,lng:51.5,name:'Qatar'},
+  NZL:{lat:-41.3,lng:174.8,name:'New Zealand'},LBY:{lat:26.3,lng:17.2,name:'Libya'},
+  DZA:{lat:36.8,lng:3.0,name:'Algeria'},MAR:{lat:34.0,lng:-6.8,name:'Morocco'},
+  TUN:{lat:36.8,lng:10.2,name:'Tunisia'},AGO:{lat:-8.8,lng:13.2,name:'Angola'},
+  MOZ:{lat:-25.9,lng:32.6,name:'Mozambique'},ZMB:{lat:-15.4,lng:28.3,name:'Zambia'},
+  ZWE:{lat:-17.8,lng:31.0,name:'Zimbabwe'},MWI:{lat:-13.98,lng:33.8,name:'Malawi'},
+  COG:{lat:-4.3,lng:15.3,name:'Congo'},SEN:{lat:14.7,lng:-17.5,name:'Senegal'},
+  GHA:{lat:5.6,lng:-0.2,name:'Ghana'},CIV:{lat:6.8,lng:-5.3,name:'Ivory Coast'},
+  GIN:{lat:9.6,lng:-13.6,name:'Guinea'},LBR:{lat:6.3,lng:-10.8,name:'Liberia'},
+  SLE:{lat:8.5,lng:-13.2,name:'Sierra Leone'},BEN:{lat:6.4,lng:2.5,name:'Benin'},
+  TGO:{lat:6.1,lng:1.2,name:'Togo'},GMB:{lat:13.5,lng:-16.6,name:'Gambia'},
+  GNB:{lat:11.9,lng:-15.6,name:'Guinea-Bissau'},LKA:{lat:6.93,lng:79.8,name:'Sri Lanka'},
+  NPL:{lat:27.7,lng:85.3,name:'Nepal'},BTN:{lat:27.5,lng:89.6,name:'Bhutan'},
+  PRK:{lat:39.0,lng:125.8,name:'North Korea'},LAO:{lat:18.0,lng:102.6,name:'Laos'},
+  KHM:{lat:11.6,lng:104.9,name:'Cambodia'},VNM:{lat:21.0,lng:105.9,name:'Vietnam'},
+  PHL:{lat:14.6,lng:121.0,name:'Philippines'},PNG:{lat:-6.3,lng:143.96,name:'Papua New Guinea'},
+  CRI:{lat:9.93,lng:-84.1,name:'Costa Rica'},GTM:{lat:14.6,lng:-90.5,name:'Guatemala'},
+  HND:{lat:14.1,lng:-87.2,name:'Honduras'},SLV:{lat:13.7,lng:-89.2,name:'El Salvador'},
+  NIC:{lat:12.1,lng:-86.3,name:'Nicaragua'},PAN:{lat:9.0,lng:-79.5,name:'Panama'},
+  ECU:{lat:-0.2,lng:-78.5,name:'Ecuador'},BOL:{lat:-16.5,lng:-68.2,name:'Bolivia'},
+  PRY:{lat:-25.3,lng:-57.6,name:'Paraguay'},URY:{lat:-34.9,lng:-56.2,name:'Uruguay'},
+  CUB:{lat:23.0,lng:-82.4,name:'Cuba'},HTI:{lat:18.5,lng:-72.3,name:'Haiti'},
+  DOM:{lat:18.5,lng:-69.9,name:'Dominican Rep'},JAM:{lat:18.0,lng:-76.8,name:'Jamaica'},
+  TTO:{lat:10.65,lng:-61.5,name:'Trinidad'},BLZ:{lat:17.25,lng:-88.8,name:'Belize'},
+  GEO:{lat:41.7,lng:44.8,name:'Georgia'},ARM:{lat:40.2,lng:44.5,name:'Armenia'},
+  AZE:{lat:40.4,lng:49.9,name:'Azerbaijan'},KAZ:{lat:51.2,lng:71.45,name:'Kazakhstan'},
+  UZB:{lat:41.3,lng:69.3,name:'Uzbekistan'},TJK:{lat:38.6,lng:68.8,name:'Tajikistan'},
+  KGZ:{lat:42.9,lng:74.6,name:'Kyrgyzstan'},TKM:{lat:37.95,lng:58.4,name:'Turkmenistan'},
+  MNG:{lat:47.9,lng:106.9,name:'Mongolia'},BIH:{lat:43.9,lng:18.4,name:'Bosnia'},
+  MKD:{lat:42.0,lng:21.4,name:'North Macedonia'},ALB:{lat:41.3,lng:19.8,name:'Albania'},
+  MNE:{lat:42.4,lng:19.3,name:'Montenegro'},BLR:{lat:53.9,lng:27.6,name:'Belarus'},
+  MDA:{lat:47.0,lng:28.9,name:'Moldova'},LTU:{lat:54.7,lng:25.3,name:'Lithuania'},
+  LVA:{lat:56.95,lng:24.1,name:'Latvia'},EST:{lat:59.4,lng:24.7,name:'Estonia'},
+  CYP:{lat:35.2,lng:33.4,name:'Cyprus'},MLT:{lat:35.9,lng:14.5,name:'Malta'},
+  ISL:{lat:64.1,lng:-21.9,name:'Iceland'},LUX:{lat:49.6,lng:6.1,name:'Luxembourg'},
+  LIE:{lat:47.2,lng:9.5,name:'Liechtenstein'},DJI:{lat:11.6,lng:43.1,name:'Djibouti'},
+  PSE:{lat:31.9,lng:35.2,name:'Palestine'},NAM:{lat:-22.6,lng:17.1,name:'Namibia'},
+  BWA:{lat:-24.65,lng:25.9,name:'Botswana'},SWZ:{lat:-26.3,lng:31.1,name:'Eswatini'},
+  LSO:{lat:-29.3,lng:28.5,name:'Lesotho'},GAB:{lat:0.4,lng:9.45,name:'Gabon'},
+  GNQ:{lat:1.65,lng:10.3,name:'Eq Guinea'},BDI:{lat:-3.4,lng:29.4,name:'Burundi'},
+  OMN:{lat:21.5,lng:55.9,name:'Oman'},BHR:{lat:26.0,lng:50.6,name:'Bahrain'},
+  PRK:{lat:39.0,lng:125.8,name:'N Korea'},HKG:{lat:22.3,lng:114.2,name:'Hong Kong'}
+};
 
-var LOCATIONS = [
-  // Crisis origins (red dots)
-  {lat:35.0, lng:38.0, name:'Syria', type:2},
-  {lat:10.5, lng:-66.9, name:'Venezuela', type:2},
-  {lat:34.5, lng:69.2, name:'Afghanistan', type:2},
-  {lat:50.4, lng:30.5, name:'Ukraine', type:2},
-  {lat:15.5, lng:32.5, name:'Sudan', type:2},
-  {lat:12.0, lng:-1.5, name:'Burkina Faso', type:2},
-  {lat:16.0, lng:96.0, name:'Myanmar', type:2},
-  // Destinations (smaller dots)
-  {lat:52.5, lng:13.4, name:'Germany', type:1},
-  {lat:48.9, lng:2.4, name:'France', type:1},
-  {lat:51.5, lng:-0.1, name:'UK', type:1},
-  {lat:41.9, lng:12.5, name:'Italy', type:1},
-  {lat:40.4, lng:-3.7, name:'Spain', type:1},
-  {lat:52.2, lng:21.0, name:'Poland', type:1},
-  {lat:59.3, lng:18.1, name:'Sweden', type:1},
-  {lat:52.4, lng:4.9, name:'Netherlands', type:1},
-  {lat:48.2, lng:16.4, name:'Austria', type:1},
-  {lat:41.0, lng:29.0, name:'Turkey', type:1},
-  {lat:33.9, lng:35.5, name:'Lebanon', type:1},
-  {lat:31.9, lng:35.9, name:'Jordan', type:1},
-  {lat:40.7, lng:-74.0, name:'USA', type:1},
-  {lat:43.7, lng:-79.4, name:'Canada', type:1},
-  {lat:4.6, lng:-74.1, name:'Colombia', type:1},
-  {lat:-23.6, lng:-46.6, name:'Brazil', type:1},
-  {lat:-33.9, lng:151.2, name:'Australia', type:1},
-  {lat:33.7, lng:73.1, name:'Pakistan', type:1},
-  {lat:35.7, lng:51.4, name:'Iran', type:1},
-  {lat:0.3, lng:32.6, name:'Uganda', type:1},
-  {lat:-1.3, lng:36.8, name:'Kenya', type:1},
-  {lat:9.0, lng:38.7, name:'Ethiopia', type:1},
-];
+// Data loaded from CSV
+var FLOWS = [];
+var LOCATIONS = [];
+var flowsByOrigin = {};
+var flowsByAsylum = {};
+var totalRefugees = 0;
+var totalAsylumSeekers = 0;
+var currentYear = 2025;
+
+// Load and parse UNHCR CSV
+async function loadUNHCRData() {
+  try {
+    var resp = await fetch('unhcr_data.csv');
+    var text = await resp.text();
+    var lines = text.split('\n');
+    var header = lines[0];
+    
+    // Clear previous data
+    FLOWS = [];
+    flowsByOrigin = {};
+    flowsByAsylum = {};
+    totalRefugees = 0;
+    totalAsylumSeekers = 0;
+    
+    // Parse lines for selected year
+    for (var i = 1; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) continue;
+      
+      // Parse CSV (handle quoted fields)
+      var fields = parseCSVLine(line);
+      if (fields.length < 7) continue;
+      
+      var year = parseInt(fields[0]);
+      if (year !== currentYear) continue;
+      
+      var asylumISO = fields[3];
+      var originISO = fields[4];
+      var refugees = parseInt(fields[5]) || 0;
+      var asylumSeekers = parseInt(fields[6]) || 0;
+      var total = refugees + asylumSeekers;
+      
+      if (total < 100) continue; // Filter small flows
+      if (!COUNTRY_COORDS[originISO] || !COUNTRY_COORDS[asylumISO]) continue;
+      if (originISO === asylumISO) continue; // No internal
+      
+      // Aggregate by origin
+      if (!flowsByOrigin[originISO]) flowsByOrigin[originISO] = {total: 0, destinations: {}};
+      flowsByOrigin[originISO].total += total;
+      flowsByOrigin[originISO].destinations[asylumISO] = (flowsByOrigin[originISO].destinations[asylumISO] || 0) + total;
+      
+      // Aggregate by asylum
+      if (!flowsByAsylum[asylumISO]) flowsByAsylum[asylumISO] = {total: 0, origins: {}};
+      flowsByAsylum[asylumISO].total += total;
+      flowsByAsylum[asylumISO].origins[originISO] = (flowsByAsylum[asylumISO].origins[originISO] || 0) + total;
+      
+      totalRefugees += refugees;
+      totalAsylumSeekers += asylumSeekers;
+      
+      FLOWS.push({
+        origin: originISO,
+        asylum: asylumISO,
+        refugees: refugees,
+        asylumSeekers: asylumSeekers,
+        total: total
+      });
+    }
+    
+    // Build LOCATIONS from data
+    buildLocationsFromData();
+    updateKPIs();
+    updateBarCharts();
+    updateCountryFilter();
+    
+    console.log('Loaded ' + FLOWS.length + ' flows for ' + currentYear);
+    return true;
+  } catch(e) {
+    console.error('Failed to load UNHCR data:', e);
+    return false;
+  }
+}
+
+function parseCSVLine(line) {
+  var result = [];
+  var current = '';
+  var inQuotes = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (c === '"') {
+      inQuotes = !inQuotes;
+    } else if (c === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += c;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function buildLocationsFromData() {
+  LOCATIONS = [];
+  var added = {};
+  
+  // Get top origins (outflow - red)
+  var origins = Object.entries(flowsByOrigin)
+    .sort(function(a,b){return b[1].total - a[1].total})
+    .slice(0, 15);
+  
+  origins.forEach(function(e) {
+    var iso = e[0];
+    if (added[iso]) return;
+    var c = COUNTRY_COORDS[iso];
+    if (!c) return;
+    LOCATIONS.push({lat: c.lat, lng: c.lng, name: c.name, iso: iso, type: 2, flow: e[1].total});
+    added[iso] = true;
+  });
+  
+  // Get top asylums (inflow - cyan)
+  var asylums = Object.entries(flowsByAsylum)
+    .sort(function(a,b){return b[1].total - a[1].total})
+    .slice(0, 20);
+  
+  asylums.forEach(function(e) {
+    var iso = e[0];
+    if (added[iso]) { // Already origin, mark as both
+      var loc = LOCATIONS.find(function(l){return l.iso === iso;});
+      if (loc) loc.type = 3; // Both
+      return;
+    }
+    var c = COUNTRY_COORDS[iso];
+    if (!c) return;
+    LOCATIONS.push({lat: c.lat, lng: c.lng, name: c.name, iso: iso, type: 1, flow: e[1].total});
+    added[iso] = true;
+  });
+}
+
+function updateKPIs() {
+  var topOrigin = Object.entries(flowsByOrigin).sort(function(a,b){return b[1].total - a[1].total;})[0];
+  var topAsylum = Object.entries(flowsByAsylum).sort(function(a,b){return b[1].total - a[1].total;})[0];
+  
+  document.getElementById('kpi-outflow').textContent = formatNumber(topOrigin ? topOrigin[1].total : 0);
+  document.getElementById('kpi-inflow').textContent = formatNumber(topAsylum ? topAsylum[1].total : 0);
+  
+  // Update left HUD
+  var totalDisplaced = totalRefugees + totalAsylumSeekers;
+  document.querySelector('#hud-left .hud-value').textContent = formatNumber(totalDisplaced);
+  document.querySelectorAll('#hud-left .hud-value')[1].textContent = formatNumber(totalRefugees);
+  document.querySelectorAll('#hud-left .hud-value')[2].textContent = formatNumber(totalAsylumSeekers);
+}
+
+function formatNumber(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(0) + 'K';
+  return n.toString();
+}
+
+function updateBarCharts() {
+  // Top 5 outflow origins
+  var topOrigins = Object.entries(flowsByOrigin)
+    .sort(function(a,b){return b[1].total - a[1].total})
+    .slice(0, 5);
+  var maxOut = topOrigins[0] ? topOrigins[0][1].total : 1;
+  
+  var outflowHTML = '';
+  topOrigins.forEach(function(e, i) {
+    var iso = e[0];
+    var pct = (e[1].total / maxOut * 100).toFixed(0);
+    var name = COUNTRY_COORDS[iso] ? COUNTRY_COORDS[iso].name.substring(0,8).toUpperCase() : iso;
+    outflowHTML += '<div class="bar-row outflow-row" onclick="filterCountry(\'' + iso.toLowerCase() + '\')">' +
+      '<div class="bar-rank">' + (i+1) + '</div>' +
+      '<div class="bar-label">' + name + '</div>' +
+      '<div class="bar-track"><div class="bar-fill outflow" style="width:' + pct + '%"></div></div>' +
+      '<div class="bar-value">' + formatNumber(e[1].total) + '</div></div>';
+  });
+  document.getElementById('outflow-chart').innerHTML = outflowHTML;
+  
+  // Top 5 inflow destinations
+  var topAsylums = Object.entries(flowsByAsylum)
+    .sort(function(a,b){return b[1].total - a[1].total})
+    .slice(0, 5);
+  var maxIn = topAsylums[0] ? topAsylums[0][1].total : 1;
+  
+  var inflowHTML = '';
+  topAsylums.forEach(function(e, i) {
+    var iso = e[0];
+    var pct = (e[1].total / maxIn * 100).toFixed(0);
+    var name = COUNTRY_COORDS[iso] ? COUNTRY_COORDS[iso].name.substring(0,8).toUpperCase() : iso;
+    inflowHTML += '<div class="bar-row inflow-row">' +
+      '<div class="bar-rank">' + (i+1) + '</div>' +
+      '<div class="bar-label">' + name + '</div>' +
+      '<div class="bar-track"><div class="bar-fill inflow" style="width:' + pct + '%"></div></div>' +
+      '<div class="bar-value">' + formatNumber(e[1].total) + '</div></div>';
+  });
+  document.getElementById('inflow-chart').innerHTML = inflowHTML;
+}
+
+function updateCountryFilter() {
+  var select = document.getElementById('countryFilter');
+  select.innerHTML = '<option value="all">-- ALL REGIONS --</option>';
+  
+  var topOrigins = Object.entries(flowsByOrigin)
+    .sort(function(a,b){return b[1].total - a[1].total})
+    .slice(0, 15);
+  
+  topOrigins.forEach(function(e) {
+    var iso = e[0];
+    var name = COUNTRY_COORDS[iso] ? COUNTRY_COORDS[iso].name.toUpperCase() : iso;
+    var opt = document.createElement('option');
+    opt.value = iso.toLowerCase();
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+}
 
 // ============== GLOBALS ==============
 var container, camera, scene, renderer;
@@ -963,9 +1227,12 @@ var mouse = new THREE.Vector2();
 var hasDragged = false;
 
 // ============== INIT ==============
-function init() {
+async function init() {
   container = document.getElementById('interactive');
   var w = window.innerWidth, h = window.innerHeight;
+  
+  // Load UNHCR data first
+  await loadUNHCRData();
   
   scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0x000000, 0, 400);
@@ -985,16 +1252,14 @@ function init() {
   createGlobe();
   createRings();
   createDots();
-  createArcsSnake();
-  createArcsRocket();
-  createArcsBloom();
+  createArcsFromFlows();  // Use real data
   
   addEvents();
   animate();
   
   // Start animation
   setTimeout(function() {
-    arcSnakeAnim.play();
+    if (arcSnakeAnim) arcSnakeAnim.play();
   }, 500);
 }
 
@@ -1264,23 +1529,26 @@ function createDots() {
   
   var dotGeo = new THREE.PlaneGeometry(1, 1);
   
-  // Migration intensity data (higher = more migrants)
-  var migrationIntensity = {
-    'Syria': 1.0, 'Ukraine': 0.93, 'Afghanistan': 0.84, 'Venezuela': 0.74, 
-    'Sudan': 0.41, 'Myanmar': 0.19, 'Burkina Faso': 0.15,
-    'Turkey': 0.9, 'Germany': 0.65, 'Poland': 0.5, 'Colombia': 0.47,
-    'Pakistan': 0.42, 'Iran': 0.4, 'Lebanon': 0.35, 'Jordan': 0.3,
-    'USA': 0.28, 'Canada': 0.2, 'UK': 0.18, 'France': 0.17, 'Italy': 0.15,
-    'Spain': 0.14, 'Sweden': 0.12, 'Netherlands': 0.11, 'Austria': 0.1,
-    'Uganda': 0.25, 'Kenya': 0.15, 'Ethiopia': 0.2, 'Brazil': 0.18, 'Australia': 0.12
-  };
+  // Calculate max flow for intensity normalization
+  var maxOriginFlow = 1;
+  var maxAsylumFlow = 1;
+  Object.values(flowsByOrigin).forEach(function(d) { if (d.total > maxOriginFlow) maxOriginFlow = d.total; });
+  Object.values(flowsByAsylum).forEach(function(d) { if (d.total > maxAsylumFlow) maxAsylumFlow = d.total; });
   
   LOCATIONS.forEach(function(loc, i) {
     var pos = latLngToVec3(loc.lat, loc.lng, CONFIG.globeRadius, 0.5);
-    var intensity = migrationIntensity[loc.name] || 0.2;
     
-    // Type 2 = Outflow (RED), Type 1 = Inflow (Fluorescent Sky Blue #00E5FF)
-    var isOutflow = loc.type === 2;
+    // Calculate intensity from actual flow data
+    var iso = loc.iso;
+    var originFlow = flowsByOrigin[iso] ? flowsByOrigin[iso].total : 0;
+    var asylumFlow = flowsByAsylum[iso] ? flowsByAsylum[iso].total : 0;
+    var intensity = loc.type === 2 ? 
+      (originFlow / maxOriginFlow) : 
+      (asylumFlow / maxAsylumFlow);
+    intensity = Math.max(0.15, Math.min(1, intensity)); // Clamp
+    
+    // Type 2 = Outflow (RED), Type 1 = Inflow (Fluorescent Sky Blue #00E5FF), Type 3 = Both
+    var isOutflow = loc.type === 2 || loc.type === 3;
     var dotColor = isOutflow ? 0xff3333 : 0x00e5ff;  // Fluorescent sky blue
     var dotTex = isOutflow ? glowTexRed : glowTexMint;
     
@@ -1397,30 +1665,53 @@ function createDots() {
 // Store arc meshes by country for filtering
 var arcsByCountry = {};
 
-function createArcsSnake() {
+// CREATE ARCS FROM REAL UNHCR FLOW DATA
+function createArcsFromFlows() {
   arcSnakeObject = new THREE.Group();
   earthObject.add(arcSnakeObject);
   
-  var origins = LOCATIONS.filter(function(l) { return l.type === 2; });
-  var dests = LOCATIONS.filter(function(l) { return l.type === 1; });
+  // Colors: Red for origin, Fluorescent Sky Blue for destination
+  var colorStart = new THREE.Color(0xff3333);
+  var colorEnd = new THREE.Color(0x00E5FF);
   
-  // Red to Fluorescent Sky Blue gradient colors
-  var colorStart = new THREE.Color(0xff3333); // Red
-  var colorEnd = new THREE.Color(0x00E5FF);   // Fluorescent Sky Blue
+  // Group flows by origin country
+  var originGroups = {};
+  FLOWS.forEach(function(flow) {
+    var originISO = flow.origin;
+    if (!originGroups[originISO]) originGroups[originISO] = [];
+    originGroups[originISO].push(flow);
+  });
   
-  origins.forEach(function(origin) {
-    var countryKey = origin.name.toLowerCase();
+  // Find max flow for scaling
+  var maxFlow = Math.max.apply(null, FLOWS.map(function(f){return f.total;})) || 1;
+  
+  // Create arcs for each origin country
+  Object.keys(originGroups).forEach(function(originISO) {
+    var flows = originGroups[originISO];
+    var origin = COUNTRY_COORDS[originISO];
+    if (!origin) return;
+    
+    var countryKey = originISO.toLowerCase();
     var countryVerts = [];
     var countryColors = [];
     var countryDetails = [];
     
-    dests.forEach(function(dest) {
-      var numArcs = 2 + Math.floor(Math.random() * 2);
+    // Sort flows by size and take top destinations
+    flows.sort(function(a,b){return b.total - a.total;});
+    var topFlows = flows.slice(0, 8); // Max 8 destinations per origin
+    
+    topFlows.forEach(function(flow) {
+      var dest = COUNTRY_COORDS[flow.asylum];
+      if (!dest) return;
+      
+      // Number of arcs based on flow volume (1-4)
+      var numArcs = Math.max(1, Math.min(4, Math.ceil(flow.total / maxFlow * 4)));
+      
       for (var a = 0; a < numArcs; a++) {
-        var sLat = origin.lat + (Math.random() - 0.5) * 2;
-        var sLng = origin.lng + (Math.random() - 0.5) * 2;
-        var eLat = dest.lat + (Math.random() - 0.5) * 1.5;
-        var eLng = dest.lng + (Math.random() - 0.5) * 1.5;
+        var sLat = origin.lat + (Math.random() - 0.5) * 1.5;
+        var sLng = origin.lng + (Math.random() - 0.5) * 1.5;
+        var eLat = dest.lat + (Math.random() - 0.5) * 1;
+        var eLng = dest.lng + (Math.random() - 0.5) * 1;
         
         var start = latLngToVec3(sLat, sLng, CONFIG.globeRadius, 0.5);
         var end = latLngToVec3(eLat, eLng, CONFIG.globeRadius, 0.5);
@@ -1436,15 +1727,12 @@ function createArcsSnake() {
         var curve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
         var pts = curve.getPoints(CONFIG.arcDivisions);
         
-        // Push as line segments (pairs of vertices)
         for (var i = 0; i < CONFIG.arcDivisions; i++) {
-          // Each segment: from pts[i] to pts[i+1]
           countryVerts.push(pts[i]);
           countryVerts.push(pts[i+1]);
           countryDetails.push({alpha: 0.7});
           countryDetails.push({alpha: 0.7});
           
-          // Gradient colors for both ends of segment
           var t1 = i / CONFIG.arcDivisions;
           var t2 = (i+1) / CONFIG.arcDivisions;
           var c1 = new THREE.Color().lerpColors(colorStart, colorEnd, t1);
@@ -1455,7 +1743,6 @@ function createArcsSnake() {
       }
     });
     
-    // Create mesh for this country
     if (countryVerts.length > 0) {
       var geo = new THREE.BufferGeometry();
       var pos = new Float32Array(countryVerts.length * 3);
@@ -1466,7 +1753,7 @@ function createArcsSnake() {
         pos[i*3] = countryVerts[i].x;
         pos[i*3+1] = countryVerts[i].y;
         pos[i*3+2] = countryVerts[i].z;
-        alp[i] = 0.7;  // Start visible
+        alp[i] = 0.7;
       }
       
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -1488,28 +1775,24 @@ function createArcsSnake() {
       });
       
       var mesh = new THREE.LineSegments(geo, mat);
-      mesh.userData = {country: countryKey, details: countryDetails};
+      mesh.userData = {country: countryKey, iso: originISO, details: countryDetails};
       arcSnakeObject.add(mesh);
       arcsByCountry[countryKey] = mesh;
     }
   });
   
-  // Simple continuous animation using time-based alpha
+  // Animation
   arcSnakeAnim = {
     time: 0,
     speed: 2.0,
     play: function() { this.running = true; },
     pause: function() { this.running = false; },
-    running: true  // Start immediately
+    running: true
   };
   
-  // Store segment info for animation  
   arcSnakeObject.children.forEach(function(mesh, countryIdx) {
     var details = mesh.userData.details;
-    var segmentSize = CONFIG.arcDivisions * 2; // doubled for LineSegments pairs
-    var numSegments = Math.floor(details.length / segmentSize);
-    
-    // Assign each vertex pair a phase offset for wave animation
+    var segmentSize = CONFIG.arcDivisions * 2;
     for (var i = 0; i < details.length; i += 2) {
       var segIdx = Math.floor(i / segmentSize);
       var ptIdx = (i / 2) % CONFIG.arcDivisions;
@@ -1520,21 +1803,23 @@ function createArcsSnake() {
   });
 }
 
-// Filter arcs by country
-function filterArcsByCountry(country) {
+// Filter arcs by country (ISO code)
+function filterArcsByCountry(countryISO) {
   if (!arcSnakeObject) return;
+  
+  var isoUpper = countryISO ? countryISO.toUpperCase() : 'ALL';
   
   arcSnakeObject.children.forEach(function(mesh) {
     var attrs = mesh.geometry.attributes;
-    if (country === 'all') {
+    var meshISO = mesh.userData.iso || mesh.userData.country.toUpperCase();
+    
+    if (isoUpper === 'ALL') {
       mesh.visible = true;
-      // Lower alpha for all
       for (var i = 0; i < attrs.alpha.array.length; i++) {
         attrs.alpha.array[i] = 0.5;
       }
     } else {
-      mesh.visible = (mesh.userData.country === country);
-      // Full alpha for selected
+      mesh.visible = (meshISO === isoUpper);
       for (var i = 0; i < attrs.alpha.array.length; i++) {
         attrs.alpha.array[i] = 1.0;
       }
@@ -2031,51 +2316,53 @@ function closeCountryDetail() {
 }
 
 // Update right panel with country data (inline, no fullscreen)
-function updatePanelWithCountry(country) {
-  var data = COUNTRY_DATA[country];
-  if (!data) return;
+function updatePanelWithCountry(iso) {
+  var coords = COUNTRY_COORDS[iso];
+  var originData = flowsByOrigin[iso];
+  if (!coords) return;
+  
+  var isOrigin = !!originData && originData.total > 0;
+  var asylumData = flowsByAsylum[iso];
   
   // Show country header
   document.getElementById('panel-country-header').style.display = 'block';
-  document.getElementById('panel-country-name').textContent = data.name;
-  document.getElementById('panel-country-status').textContent = data.type === 'outflow' ? 'OUTFLOW CRISIS' : 'INFLOW';
-  document.getElementById('panel-country-status').style.background = data.type === 'outflow' ? '#ff3333' : '#00E5FF';
-  document.getElementById('panel-country-status').style.color = data.type === 'outflow' ? '#fff' : '#000';
+  document.getElementById('panel-country-name').textContent = coords.name.toUpperCase();
+  document.getElementById('panel-country-status').textContent = isOrigin ? 'OUTFLOW CRISIS' : 'ASYLUM';
+  document.getElementById('panel-country-status').style.background = isOrigin ? '#ff3333' : '#00E5FF';
+  document.getElementById('panel-country-status').style.color = isOrigin ? '#fff' : '#000';
   
   // Update KPI
-  document.getElementById('kpi-title').textContent = data.name + ' KPI';
-  document.getElementById('kpi-outflow').textContent = data.total;
-  document.getElementById('kpi-outflow-label').textContent = 'DISPLACED';
-  document.getElementById('kpi-inflow').textContent = data.refugees;
-  document.getElementById('kpi-inflow-label').textContent = 'REFUGEES';
+  document.getElementById('kpi-title').textContent = coords.name.toUpperCase() + ' KPI';
+  document.getElementById('kpi-outflow').textContent = formatNumber(originData ? originData.total : 0);
+  document.getElementById('kpi-outflow-label').textContent = 'OUTFLOW';
+  document.getElementById('kpi-inflow').textContent = formatNumber(asylumData ? asylumData.total : 0);
+  document.getElementById('kpi-inflow-label').textContent = 'INFLOW';
   
-  // Show crisis info
-  document.getElementById('panel-crisis-info').style.display = 'block';
-  var shortText = data.event.substring(0, 150) + '...';
-  document.getElementById('panel-crisis-text').textContent = shortText;
-  
-  // Show mini trend chart
-  document.getElementById('panel-trend').style.display = 'block';
-  var chartHtml = '';
-  var maxVal = Math.max.apply(null, data.trend);
-  data.trend.forEach(function(val) {
-    var h = maxVal > 0 ? (val / maxVal * 40) : 0;
-    var barColor = data.type === 'outflow' ? '#ff3333' : '#00E5FF';
-    chartHtml += '<div style="flex:1;height:' + h + 'px;background:' + barColor + ';border-radius:1px"></div>';
-  });
-  document.getElementById('panel-trend-chart').innerHTML = chartHtml;
+  // Hide crisis info and trend (no hardcoded data)
+  var crisisInfo = document.getElementById('panel-crisis-info');
+  var panelTrend = document.getElementById('panel-trend');
+  if (crisisInfo) crisisInfo.style.display = 'none';
+  if (panelTrend) panelTrend.style.display = 'none';
 }
 
 // Reset panel to global view
 function resetPanelToGlobal() {
   document.getElementById('panel-country-header').style.display = 'none';
   document.getElementById('kpi-title').textContent = 'GLOBAL KPI';
-  document.getElementById('kpi-outflow').textContent = '7.6M';
-  document.getElementById('kpi-outflow-label').textContent = 'OUTFLOW';
-  document.getElementById('kpi-inflow').textContent = '5.2M';
-  document.getElementById('kpi-inflow-label').textContent = 'INFLOW';
-  document.getElementById('panel-crisis-info').style.display = 'none';
-  document.getElementById('panel-trend').style.display = 'none';
+  
+  // Get top origin and asylum for global KPIs
+  var topOrigin = Object.entries(flowsByOrigin).sort(function(a,b){return b[1].total - a[1].total;})[0];
+  var topAsylum = Object.entries(flowsByAsylum).sort(function(a,b){return b[1].total - a[1].total;})[0];
+  
+  document.getElementById('kpi-outflow').textContent = formatNumber(topOrigin ? topOrigin[1].total : 0);
+  document.getElementById('kpi-outflow-label').textContent = 'TOP OUTFLOW';
+  document.getElementById('kpi-inflow').textContent = formatNumber(topAsylum ? topAsylum[1].total : 0);
+  document.getElementById('kpi-inflow-label').textContent = 'TOP INFLOW';
+  
+  var crisisInfo = document.getElementById('panel-crisis-info');
+  var panelTrend = document.getElementById('panel-trend');
+  if (crisisInfo) crisisInfo.style.display = 'none';
+  if (panelTrend) panelTrend.style.display = 'none';
   
   // Reset bar chart highlights
   document.querySelectorAll('.bar-row').forEach(function(row) {
@@ -2083,6 +2370,9 @@ function resetPanelToGlobal() {
     row.style.transform = 'scale(1)';
     row.style.background = 'rgba(0,0,0,0.3)';
   });
+  
+  // Also reset the inflow chart title
+  document.getElementById('inflow-title').textContent = 'INFLOW (IMMIGRATION)';
 }
 
 // Destination country name mapping (from COUNTRY_DATA destinations to LOCATIONS names)
@@ -2163,89 +2453,99 @@ function resetDotHighlights() {
 }
 
 // Country filter function
-function filterCountry(country) {
-  var countryCoords = {
-    'syria': {lat: 35.0, lng: 38.0},
-    'ukraine': {lat: 50.4, lng: 30.5},
-    'afghanistan': {lat: 34.5, lng: 69.2},
-    'venezuela': {lat: 10.5, lng: -66.9},
-    'sudan': {lat: 15.5, lng: 32.5},
-    'myanmar': {lat: 16.0, lng: 96.0}
-  };
+function filterCountry(countryInput) {
+  var iso = countryInput.toUpperCase();
+  var coords = COUNTRY_COORDS[iso];
   
-  if (country === 'all') {
+  if (countryInput === 'all' || !coords) {
     // Reset to default view
     gsap.to(camera.position, {z: 250, duration: 1, ease: 'power2.out'});
     targetRotationX = 0.3;
     targetRotationY = 0;
     resetPanelToGlobal();
     filterArcsByCountry('all');
-  } else if (countryCoords[country]) {
-    // Update panel with country data (no fullscreen)
-    updatePanelWithCountry(country);
-    filterArcsByCountry(country);
-    var c = countryCoords[country];
-    // Rotate globe to center the country exactly
-    // earthObject has -90deg Y rotation, so we compensate
-    targetRotationY = -c.lng * toRAD;
-    targetRotationX = c.lat * toRAD * 0.8;
-    // Zoom in
-    gsap.to(camera.position, {z: 140, duration: 1, ease: 'power2.out'});
-  }
-  
-  // Update inflow chart to show country-specific destinations
-  var data = COUNTRY_DATA[country];
-  
-  if (country === 'all') {
-    // Reset to global inflow data
+    
+    // Reset inflow chart to global
     document.getElementById('inflow-title').textContent = 'INFLOW (IMMIGRATION)';
-    document.getElementById('inflowChart').innerHTML = generateGlobalInflowChart();
-  } else if (data && data.destinations) {
-    // Show this country's destination countries
-    document.getElementById('inflow-title').textContent = 'TOP DESTINATIONS FROM ' + data.name;
-    document.getElementById('inflowChart').innerHTML = generateDestinationChart(data.destinations);
+    updateBarCharts();
+  } else if (coords) {
+    // Update panel with country data
+    updatePanelWithCountry(iso);
+    filterArcsByCountry(iso);
+    
+    // Rotate globe to center the country
+    targetRotationY = -coords.lng * toRAD;
+    targetRotationX = coords.lat * toRAD * 0.8;
+    gsap.to(camera.position, {z: 140, duration: 1, ease: 'power2.out'});
+    
+    // Update inflow chart to show destinations from this origin
+    var originData = flowsByOrigin[iso];
+    if (originData && originData.destinations) {
+      document.getElementById('inflow-title').textContent = 'DESTINATIONS FROM ' + coords.name.toUpperCase();
+      var dests = Object.entries(originData.destinations)
+        .sort(function(a,b){return b[1] - a[1];})
+        .slice(0, 5);
+      var maxVal = dests[0] ? dests[0][1] : 1;
+      
+      var html = dests.map(function(d, i) {
+        var destISO = d[0];
+        var destCoords = COUNTRY_COORDS[destISO];
+        var name = destCoords ? destCoords.name.substring(0,8).toUpperCase() : destISO;
+        var pct = (d[1] / maxVal * 100).toFixed(0);
+        return '<div class="bar-row inflow-row">' +
+          '<div class="bar-rank">' + (i+1) + '</div>' +
+          '<div class="bar-label">' + name + '</div>' +
+          '<div class="bar-track"><div class="bar-fill inflow" style="width:' + pct + '%"></div></div>' +
+          '<div class="bar-value">' + formatNumber(d[1]) + '</div></div>';
+      }).join('');
+      document.getElementById('inflow-chart').innerHTML = html;
+    }
+    
+    // Update outflow KPI for this country
+    document.getElementById('kpi-outflow').textContent = formatNumber(originData ? originData.total : 0);
+    document.getElementById('kpi-outflow-label').textContent = 'FROM ' + coords.name.toUpperCase();
   }
 }
 
-// Generate global inflow chart HTML
+// Generate global inflow chart HTML (fallback, using updateBarCharts instead)
 function generateGlobalInflowChart() {
-  var globalInflow = [
-    {name: 'TURKEY', value: '3.6M', pct: 90},
-    {name: 'GERMANY', value: '2.5M', pct: 63},
-    {name: 'POLAND', value: '1.9M', pct: 48},
-    {name: 'COLOMBIA', value: '1.8M', pct: 45},
-    {name: 'PAKISTAN', value: '1.6M', pct: 40}
-  ];
-  return globalInflow.map(function(d, i) {
+  var topAsylums = Object.entries(flowsByAsylum)
+    .sort(function(a,b){return b[1].total - a[1].total})
+    .slice(0, 5);
+  var maxIn = topAsylums[0] ? topAsylums[0][1].total : 1;
+  
+  return topAsylums.map(function(e, i) {
+    var iso = e[0];
+    var pct = (e[1].total / maxIn * 100).toFixed(0);
+    var name = COUNTRY_COORDS[iso] ? COUNTRY_COORDS[iso].name.substring(0,8).toUpperCase() : iso;
     return '<div class="bar-row inflow-row">' +
-      '<div class="bar-rank">0' + (i+1) + '</div>' +
-      '<div class="bar-label">' + d.name + '</div>' +
-      '<div class="bar-track"><div class="bar-fill inflow" style="width:' + d.pct + '%"></div></div>' +
-      '<div class="bar-value">' + d.value + '</div>' +
-    '</div>';
+      '<div class="bar-rank">' + (i+1) + '</div>' +
+      '<div class="bar-label">' + name + '</div>' +
+      '<div class="bar-track"><div class="bar-fill inflow" style="width:' + pct + '%"></div></div>' +
+      '<div class="bar-value">' + formatNumber(e[1].total) + '</div></div>';
   }).join('');
 }
 
-// Generate destination chart for a specific country
-function generateDestinationChart(destinations) {
-  // Parse "Turkey 3.6M" format
-  var maxVal = 0;
-  var parsed = destinations.map(function(d) {
-    var parts = d.match(/(.+)\s+([\d.]+)M?/);
-    var name = parts ? parts[1].toUpperCase() : d;
-    var val = parts ? parseFloat(parts[2]) : 0;
-    if (val > maxVal) maxVal = val;
-    return {name: name, value: parts ? parts[2] + 'M' : '', raw: val};
-  });
+// Generate destination chart for a specific country (keeping for compatibility)
+function generateDestinationChart(iso) {
+  var originData = flowsByOrigin[iso.toUpperCase()];
+  if (!originData || !originData.destinations) return '';
   
-  return parsed.map(function(d, i) {
-    var pct = maxVal > 0 ? (d.raw / maxVal * 100) : 0;
+  var dests = Object.entries(originData.destinations)
+    .sort(function(a,b){return b[1] - a[1];})
+    .slice(0, 5);
+  var maxVal = dests[0] ? dests[0][1] : 1;
+  
+  return dests.map(function(d, i) {
+    var destISO = d[0];
+    var destCoords = COUNTRY_COORDS[destISO];
+    var name = destCoords ? destCoords.name.substring(0,8).toUpperCase() : destISO;
+    var pct = (d[1] / maxVal * 100).toFixed(0);
     return '<div class="bar-row inflow-row">' +
-      '<div class="bar-rank">0' + (i+1) + '</div>' +
-      '<div class="bar-label">' + d.name + '</div>' +
+      '<div class="bar-rank">' + (i+1) + '</div>' +
+      '<div class="bar-label">' + name + '</div>' +
       '<div class="bar-track"><div class="bar-fill inflow" style="width:' + pct + '%"></div></div>' +
-      '<div class="bar-value">' + d.value + '</div>' +
-    '</div>';
+      '<div class="bar-value">' + formatNumber(d[1]) + '</div></div>';
   }).join('');
 }
 
