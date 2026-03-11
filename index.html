@@ -288,28 +288,68 @@
   
   <div id="minimap">
     <svg viewBox="0 0 500 250" xmlns="http://www.w3.org/2000/svg">
-      <!-- Simplified world map outline -->
-      <g fill="#00CCFF" class="animate_stroke">
+      <!-- World map continents -->
+      <g fill="#00CCFF" opacity="0.5">
         <!-- North America -->
-        <path d="M60,60 L80,55 L100,50 L120,52 L130,60 L125,75 L115,85 L100,95 L85,100 L75,110 L65,105 L55,90 L50,75 Z" opacity="0.6"/>
+        <path d="M20,45 Q25,35 45,30 Q70,28 95,35 Q115,40 125,50 Q130,60 125,75 Q118,90 105,100 Q90,108 75,115 Q60,118 50,110 Q35,100 25,85 Q18,70 20,55 Z"/>
+        <!-- Central America -->
+        <path d="M75,115 Q82,118 88,125 Q92,132 88,140 Q82,145 75,142 Q70,138 72,130 Q74,122 75,115 Z"/>
         <!-- South America -->
-        <path d="M95,115 L105,120 L115,135 L120,155 L115,175 L105,190 L90,195 L80,185 L75,165 L80,145 L85,125 Z" opacity="0.6"/>
+        <path d="M88,145 Q100,142 110,150 Q118,162 120,180 Q118,200 108,215 Q95,225 80,220 Q68,210 65,190 Q65,170 72,155 Q80,145 88,145 Z"/>
         <!-- Europe -->
-        <path d="M220,45 L240,42 L260,45 L275,50 L280,60 L275,72 L260,78 L245,75 L230,70 L220,60 Z" opacity="0.6"/>
+        <path d="M230,32 Q250,28 270,32 Q285,38 290,50 Q288,62 275,70 Q260,75 245,72 Q232,68 228,58 Q225,45 230,32 Z"/>
         <!-- Africa -->
-        <path d="M230,85 L250,82 L270,88 L280,105 L275,130 L265,155 L245,165 L225,160 L215,140 L210,115 L215,95 Z" opacity="0.6"/>
-        <!-- Asia -->
-        <path d="M285,40 L320,35 L360,38 L400,45 L420,55 L415,75 L395,90 L360,95 L320,90 L290,80 L280,60 Z" opacity="0.6"/>
-        <!-- Australia -->
-        <path d="M380,140 L410,135 L430,145 L435,165 L420,180 L395,178 L375,165 L370,150 Z" opacity="0.6"/>
+        <path d="M235,78 Q255,75 275,82 Q290,92 295,110 Q295,135 285,158 Q270,178 250,182 Q230,180 218,165 Q210,145 212,120 Q218,95 235,78 Z"/>
+        <!-- Middle East -->
+        <path d="M295,60 Q315,55 330,62 Q340,72 335,85 Q325,95 310,92 Q295,88 292,75 Q290,65 295,60 Z"/>
         <!-- Russia/North Asia -->
-        <path d="M290,30 L340,25 L400,28 L450,35 L470,45 L460,55 L420,50 L360,48 L310,45 L290,40 Z" opacity="0.5"/>
+        <path d="M290,25 Q340,18 400,22 Q450,28 480,38 Q495,45 490,55 Q475,58 440,52 Q390,48 340,45 Q300,42 285,38 Q280,32 290,25 Z"/>
+        <!-- South Asia -->
+        <path d="M340,85 Q360,80 375,88 Q385,100 380,115 Q368,125 350,122 Q335,115 335,100 Q338,90 340,85 Z"/>
+        <!-- East Asia -->
+        <path d="M385,45 Q410,42 430,48 Q445,58 448,72 Q445,85 430,92 Q410,95 395,88 Q382,78 382,62 Q385,50 385,45 Z"/>
+        <!-- Southeast Asia -->
+        <path d="M390,100 Q405,98 415,105 Q422,115 418,128 Q408,138 392,135 Q380,128 382,115 Q385,105 390,100 Z"/>
+        <!-- Australia -->
+        <path d="M405,155 Q430,148 450,158 Q462,172 458,190 Q445,205 420,202 Q398,195 395,175 Q398,160 405,155 Z"/>
       </g>
-      <!-- Migration flow indicator lines -->
-      <g stroke="#FF1313" stroke-width="0.5" fill="none" opacity="0.4">
-        <path d="M100,85 Q200,60 260,70"/>
-        <path d="M260,75 Q300,90 380,150"/>
-        <path d="M260,70 Q340,50 400,50"/>
+      <!-- Migration flow arcs -->
+      <g stroke="#FF1313" stroke-width="0.8" fill="none" opacity="0.6">
+        <!-- Syria to Europe -->
+        <path d="M310,75 Q280,50 255,55"/>
+        <!-- Syria to Turkey -->
+        <path d="M310,75 Q305,68 295,65"/>
+        <!-- Afghanistan to Pakistan -->
+        <path d="M355,90 Q352,100 350,110"/>
+        <!-- Venezuela to Colombia -->
+        <path d="M85,135 Q82,138 80,142"/>
+        <!-- Ukraine to Poland -->
+        <path d="M285,48 Q275,42 265,45"/>
+        <!-- Sudan to Uganda -->
+        <path d="M275,115 Q268,130 262,145"/>
+        <!-- Myanmar to Bangladesh -->
+        <path d="M385,105 Q375,100 365,98"/>
+      </g>
+      <!-- Crisis hub markers (red glowing dots) -->
+      <g fill="#FF1313">
+        <!-- Syria -->
+        <circle cx="310" cy="75" r="3" opacity="0.9"/>
+        <circle cx="310" cy="75" r="5" opacity="0.4"/>
+        <!-- Venezuela -->
+        <circle cx="85" cy="135" r="2.5" opacity="0.9"/>
+        <circle cx="85" cy="135" r="4" opacity="0.4"/>
+        <!-- Afghanistan -->
+        <circle cx="355" cy="90" r="2.5" opacity="0.9"/>
+        <circle cx="355" cy="90" r="4" opacity="0.4"/>
+        <!-- Ukraine -->
+        <circle cx="285" cy="48" r="2.5" opacity="0.9"/>
+        <circle cx="285" cy="48" r="4" opacity="0.4"/>
+        <!-- Sudan -->
+        <circle cx="275" cy="115" r="2.5" opacity="0.9"/>
+        <circle cx="275" cy="115" r="4" opacity="0.4"/>
+        <!-- Myanmar -->
+        <circle cx="385" cy="105" r="2.5" opacity="0.9"/>
+        <circle cx="385" cy="105" r="4" opacity="0.4"/>
       </g>
     </svg>
   </div>
