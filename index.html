@@ -439,6 +439,11 @@
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
 // ============== CONFIG ==============
@@ -498,7 +503,7 @@ var LOCATIONS = [
 ];
 
 // ============== GLOBALS ==============
-var container, camera, scene, renderer;
+var container, camera, scene, renderer, composer;
 var rotationObject, earthObject;
 var mouseX = 0, mouseY = 0, mouseXOnDown = 0, mouseYOnDown = 0;
 var targetRotationX = 0.45, targetRotationY = 65 * Math.PI/180;
@@ -531,6 +536,20 @@ function init() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x000000, 1);
   container.appendChild(renderer.domElement);
+  
+  // Post-processing bloom
+  composer = new THREE.EffectComposer(renderer);
+  var renderPass = new THREE.RenderPass(scene, camera);
+  composer.addPass(renderPass);
+  
+  var bloomPass = new THREE.UnrealBloomPass(
+    new THREE.Vector2(w, h),
+    1.5,   // strength - 형광 강도
+    0.4,   // radius - glow 퍼짐
+    0.1    // threshold - 밝기 임계값 (낮을수록 더 많이 빛남)
+  );
+  bloomPass.renderToScreen = true;
+  composer.addPass(bloomPass);
   
   createGroups();
   createLights();
@@ -1154,6 +1173,7 @@ function addEvents() {
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
+    composer.setSize(w, h);
   });
 }
 
@@ -1169,7 +1189,7 @@ function animate() {
   rotationObject.rotation.x += (targetRotationX - rotationObject.rotation.x) * 0.1;
   rotationObject.rotation.y += (targetRotationY - rotationObject.rotation.y) * 0.1;
   
-  renderer.render(scene, camera);
+  composer.render();
 }
 
 // Start
