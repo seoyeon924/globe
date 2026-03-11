@@ -1493,18 +1493,7 @@ function createGlobe() {
   globeOuterMesh = new THREE.Mesh(geo, outerMat);
   earthObject.add(globeOuterMesh);
   
-  // Wireframe overlay for cyber look
-  var wireGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.002, 32, 32);
-  var wireMat = new THREE.MeshBasicMaterial({
-    color: colorBase,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    wireframe: true,
-    opacity: 0.2,
-    depthWrite: false
-  });
-  var wireMesh = new THREE.Mesh(wireGeo, wireMat);
-  earthObject.add(wireMesh);
+  // Wireframe removed for cleaner look
   
   // Atmosphere glow - orange/gold like reference
   var glowGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.12, 32, 32);
