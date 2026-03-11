@@ -390,13 +390,16 @@
     #tooltip{
       display:none;visibility:hidden;opacity:0;
       position:fixed;
-      padding:8px 12px;
-      background:transparent;
+      padding:10px 14px;
+      background:rgba(0,0,0,0.95);
+      border:1px solid rgba(0,204,255,0.4);
+      border-radius:4px;
       font-size:12px;line-height:18px;
       white-space:nowrap;
       z-index:100;
       text-transform:uppercase;
-      text-shadow:0 0 10px rgba(0,0,0,0.8);
+      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);
       transition:opacity 0.3s;
     }
     #tooltip .label{
