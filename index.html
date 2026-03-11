@@ -247,41 +247,19 @@
       font-size:8px;
     }
     .bar-track{
-      flex:1;height:8px;
-      background:rgba(255,255,255,0.05);
+      flex:1;height:6px;
+      background:rgba(255,255,255,0.1);
       margin:0 10px;position:relative;
-      border-radius:1px;
+      border-radius:3px;
       overflow:hidden;
-    }
-    .bar-track::before{
-      content:'';position:absolute;
-      top:0;left:0;right:0;bottom:0;
-      background:repeating-linear-gradient(
-        90deg,
-        transparent,transparent 10%,
-        rgba(255,255,255,0.03) 10%,rgba(255,255,255,0.03) 20%
-      );
     }
     .bar-fill{
       height:100%;position:absolute;left:0;top:0;
-      transition:width 0.6s cubic-bezier(0.4,0,0.2,1);
-      border-radius:1px;
+      transition:width 0.5s ease;
+      border-radius:3px;
     }
-    .bar-fill.outflow{
-      background:linear-gradient(90deg,#FF1313 0%,#FF4444 50%,#FF6666 100%);
-      box-shadow:0 0 12px rgba(255,19,19,0.5),inset 0 1px 0 rgba(255,255,255,0.2);
-    }
-    .bar-fill.inflow{
-      background:linear-gradient(90deg,#00E5FF 0%,#33EBFF 50%,#66F0FF 100%);
-      box-shadow:0 0 12px rgba(0,229,255,0.4),inset 0 1px 0 rgba(255,255,255,0.2);
-    }
-    .bar-fill::after{
-      content:'';position:absolute;
-      right:0;top:50%;transform:translateY(-50%);
-      width:3px;height:12px;
-      background:#fff;border-radius:1px;
-      box-shadow:0 0 6px currentColor;
-    }
+    .bar-fill.outflow{background:#FF4444}
+    .bar-fill.inflow{background:#00E5FF}
     .bar-value{
       width:40px;text-align:right;
       font-family:'Michroma',sans-serif;
