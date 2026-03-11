@@ -1441,14 +1441,10 @@ function createArcsSnake() {
     }
   });
   
-  // Create combined animation
-  var allDetails = [];
-  arcSnakeObject.children.forEach(function(mesh) {
-    allDetails = allDetails.concat(mesh.userData.details);
-  });
-  
+  // Create animations - all countries animate together
   arcSnakeAnim = gsap.timeline({paused: true, repeat: -1, onUpdate: function() {
     arcSnakeObject.children.forEach(function(mesh) {
+      if (!mesh.visible) return;
       var attrs = mesh.geometry.attributes;
       var details = mesh.userData.details;
       for (var i = 0; i < details.length; i++) {
@@ -1458,10 +1454,32 @@ function createArcsSnake() {
     });
   }});
   
-  allDetails.forEach(function(d, i) {
-    arcSnakeAnim.to(d, {alpha: 1, duration: 0.1}, i * CONFIG.arcAnimSpeed * 0.5);
-    arcSnakeAnim.to(d, {alpha: 0, duration: 0.3}, i * CONFIG.arcAnimSpeed * 0.5 + 0.1);
+  // Group points by arc segment (every arcDivisions points = 1 arc)
+  var segmentSize = CONFIG.arcDivisions;
+  
+  arcSnakeObject.children.forEach(function(mesh, countryIdx) {
+    var details = mesh.userData.details;
+    var numSegments = Math.floor(details.length / segmentSize);
+    
+    for (var seg = 0; seg < numSegments; seg++) {
+      // Each segment (arc) starts at a different time, cycling continuously
+      var segmentDelay = (countryIdx * 0.3) + (seg * 0.08);
+      
+      for (var pt = 0; pt < segmentSize; pt++) {
+        var idx = seg * segmentSize + pt;
+        if (idx < details.length) {
+          var d = details[idx];
+          // Snake effect: each point in segment lights up slightly after previous
+          var pointDelay = segmentDelay + (pt * 0.02);
+          arcSnakeAnim.to(d, {alpha: 1, duration: 0.1}, pointDelay);
+          arcSnakeAnim.to(d, {alpha: 0, duration: 0.3}, pointDelay + 0.15);
+        }
+      }
+    }
   });
+  
+  // Speed up the timeline
+  arcSnakeAnim.timeScale(1.5);
 }
 
 // Filter arcs by country
