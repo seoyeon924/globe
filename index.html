@@ -1495,31 +1495,44 @@ function createGlobe() {
   
   // Wireframe removed for cleaner look
   
-  // Atmosphere glow - orange/gold like reference
-  var glowGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.12, 32, 32);
+  // Outer atmosphere glow - cyan/blue
+  var glowGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.25, 48, 48);
   var glowMat = new THREE.MeshBasicMaterial({
-    color: 0xff8c00,
+    color: 0x00aaff,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.BackSide,
-    opacity: 0.15,
+    opacity: 0.12,
     depthWrite: false
   });
   var glowMesh = new THREE.Mesh(glowGeo, glowMat);
   earthObject.add(glowMesh);
   
-  // Second glow layer for rim light
-  var glowGeo2 = new THREE.SphereGeometry(CONFIG.globeRadius * 1.05, 32, 32);
+  // Mid glow layer - teal
+  var glowGeo2 = new THREE.SphereGeometry(CONFIG.globeRadius * 1.15, 48, 48);
   var glowMat2 = new THREE.MeshBasicMaterial({
-    color: 0xffa500,
+    color: 0x00e5ff,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.BackSide,
-    opacity: 0.08,
+    opacity: 0.18,
     depthWrite: false
   });
   var glowMesh2 = new THREE.Mesh(glowGeo2, glowMat2);
   earthObject.add(glowMesh2);
+  
+  // Inner rim glow - bright cyan
+  var glowGeo3 = new THREE.SphereGeometry(CONFIG.globeRadius * 1.06, 48, 48);
+  var glowMat3 = new THREE.MeshBasicMaterial({
+    color: 0x66ffff,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+    opacity: 0.25,
+    depthWrite: false
+  });
+  var glowMesh3 = new THREE.Mesh(glowGeo3, glowMat3);
+  earthObject.add(glowMesh3);
   
   // Shield for lighting interaction
   var shieldMat = new THREE.MeshPhongMaterial({
