@@ -1465,8 +1465,8 @@ function createArcsSnake() {
           // Each segment: from pts[i] to pts[i+1]
           countryVerts.push(pts[i]);
           countryVerts.push(pts[i+1]);
-          countryDetails.push({alpha: 1});
-          countryDetails.push({alpha: 1});
+          countryDetails.push({alpha: 0.7});
+          countryDetails.push({alpha: 0.7});
           
           // Gradient colors for both ends of segment
           var t1 = i / CONFIG.arcDivisions;
@@ -1490,7 +1490,7 @@ function createArcsSnake() {
         pos[i*3] = countryVerts[i].x;
         pos[i*3+1] = countryVerts[i].y;
         pos[i*3+2] = countryVerts[i].z;
-        alp[i] = 1;  // Start visible
+        alp[i] = 0.7;  // Start visible
       }
       
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -1549,11 +1549,21 @@ function filterArcsByCountry(country) {
   if (!arcSnakeObject) return;
   
   arcSnakeObject.children.forEach(function(mesh) {
+    var attrs = mesh.geometry.attributes;
     if (country === 'all') {
       mesh.visible = true;
+      // Lower alpha for all
+      for (var i = 0; i < attrs.alpha.array.length; i++) {
+        attrs.alpha.array[i] = 0.5;
+      }
     } else {
       mesh.visible = (mesh.userData.country === country);
+      // Full alpha for selected
+      for (var i = 0; i < attrs.alpha.array.length; i++) {
+        attrs.alpha.array[i] = 1.0;
+      }
     }
+    attrs.alpha.needsUpdate = true;
   });
 }
 
