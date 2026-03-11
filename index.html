@@ -1246,10 +1246,10 @@ function buildLocationsFromData() {
   LOCATIONS = [];
   var added = {};
   
-  // Get top origins (outflow - red)
+  // Get top origins (outflow - red) - top 30
   var origins = Object.entries(flowsByOrigin)
     .sort(function(a,b){return b[1].total - a[1].total})
-    .slice(0, 15);
+    .slice(0, 30);
   
   origins.forEach(function(e) {
     var iso = e[0];
@@ -1260,10 +1260,10 @@ function buildLocationsFromData() {
     added[iso] = true;
   });
   
-  // Get top asylums (inflow - cyan)
+  // Get top asylums (inflow - cyan) - top 30
   var asylums = Object.entries(flowsByAsylum)
     .sort(function(a,b){return b[1].total - a[1].total})
-    .slice(0, 20);
+    .slice(0, 30);
   
   asylums.forEach(function(e) {
     var iso = e[0];
@@ -1343,9 +1343,10 @@ function updateCountryFilter() {
   var select = document.getElementById('countryFilter');
   select.innerHTML = '<option value="all">-- ALL REGIONS --</option>';
   
+  // Top 30 origin countries in dropdown
   var topOrigins = Object.entries(flowsByOrigin)
     .sort(function(a,b){return b[1].total - a[1].total})
-    .slice(0, 15);
+    .slice(0, 30);
   
   topOrigins.forEach(function(e) {
     var iso = e[0];
@@ -1855,14 +1856,15 @@ function createArcsFromFlows() {
       var dest = COUNTRY_COORDS[flow.asylum];
       if (!dest) return;
       
-      // Number of arcs based on flow volume (1-4)
-      var numArcs = Math.max(1, Math.min(4, Math.ceil(flow.total / maxFlow * 4)));
+      // Number of arcs based on flow volume (2-8) - more arcs = thicker bundle
+      var numArcs = Math.max(2, Math.min(8, Math.ceil(flow.total / maxFlow * 8)));
       
       for (var a = 0; a < numArcs; a++) {
-        var sLat = origin.lat + (Math.random() - 0.5) * 1.5;
-        var sLng = origin.lng + (Math.random() - 0.5) * 1.5;
-        var eLat = dest.lat + (Math.random() - 0.5) * 1;
-        var eLng = dest.lng + (Math.random() - 0.5) * 1;
+        // Tighter spread for bundled look
+        var sLat = origin.lat + (Math.random() - 0.5) * 0.8;
+        var sLng = origin.lng + (Math.random() - 0.5) * 0.8;
+        var eLat = dest.lat + (Math.random() - 0.5) * 0.5;
+        var eLng = dest.lng + (Math.random() - 0.5) * 0.5;
         
         var start = latLngToVec3(sLat, sLng, CONFIG.globeRadius, 0.5);
         var end = latLngToVec3(eLat, eLng, CONFIG.globeRadius, 0.5);
