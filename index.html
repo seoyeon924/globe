@@ -177,12 +177,12 @@
     #data-panel{
       position:fixed;top:50%;right:20px;
       transform:translateY(-50%);
-      width:200px;padding:12px 14px;
+      width:240px;padding:12px 14px;
       font-family:'Michroma',sans-serif;
-      font-size:9px;text-transform:uppercase;
-      letter-spacing:0.5px;
+      font-size:8px;text-transform:uppercase;
+      letter-spacing:0.3px;
       border:1px solid rgba(0,204,255,0.25);
-      background:rgba(0,0,0,0.7);
+      background:rgba(0,0,0,0.85);
     }
     #data-panel::before{
       content:'';position:absolute;top:0;right:0;
@@ -241,9 +241,10 @@
       font-size:10px;font-weight:bold;
     }
     .bar-label{
-      width:50px;color:#fff;opacity:0.9;
+      width:65px;color:#fff;opacity:0.9;
       white-space:nowrap;overflow:hidden;
-      font-weight:500;letter-spacing:0.5px;
+      font-weight:500;letter-spacing:0.3px;
+      font-size:8px;
     }
     .bar-track{
       flex:1;height:8px;
@@ -659,77 +660,67 @@
           <div class="bar-label">SYRIA</div>
           <div class="bar-track"><div class="bar-fill outflow" style="width:95%"></div></div>
           <div class="bar-value">6.8M</div>
-          <div class="bar-change up">▲</div>
         </div>
         <div class="bar-row outflow-row" onclick="filterCountry('ukraine')">
           <div class="bar-rank">02</div>
           <div class="bar-label">UKRAINE</div>
           <div class="bar-track"><div class="bar-fill outflow" style="width:88%"></div></div>
           <div class="bar-value">6.3M</div>
-          <div class="bar-change up">▲</div>
         </div>
         <div class="bar-row outflow-row" onclick="filterCountry('afghanistan')">
           <div class="bar-rank">03</div>
           <div class="bar-label">AFGHAN</div>
           <div class="bar-track"><div class="bar-fill outflow" style="width:79%"></div></div>
           <div class="bar-value">5.7M</div>
-          <div class="bar-change down">▼</div>
         </div>
         <div class="bar-row outflow-row" onclick="filterCountry('venezuela')">
           <div class="bar-rank">04</div>
-          <div class="bar-label">VENEZ</div>
+          <div class="bar-label">VENEZUELA</div>
           <div class="bar-track"><div class="bar-fill outflow" style="width:69%"></div></div>
           <div class="bar-value">5.0M</div>
-          <div class="bar-change up">▲</div>
         </div>
         <div class="bar-row outflow-row" onclick="filterCountry('sudan')">
           <div class="bar-rank">05</div>
           <div class="bar-label">SUDAN</div>
           <div class="bar-track"><div class="bar-fill outflow" style="width:39%"></div></div>
           <div class="bar-value">2.8M</div>
-          <div class="bar-change up">▲▲</div>
         </div>
       </div>
     </div>
     
-    <!-- Inflow Chart -->
-    <div class="data-section">
-      <div class="data-title">INFLOW (IMMIGRATION)</div>
+    <!-- Inflow Chart (changes to destinations when country selected) -->
+    <div class="data-section" id="inflow-section">
+      <div class="data-title" id="inflow-title">INFLOW (IMMIGRATION)</div>
       <div class="bar-chart" id="inflowChart">
         <div class="bar-row inflow-row">
           <div class="bar-rank">01</div>
           <div class="bar-label">TURKEY</div>
           <div class="bar-track"><div class="bar-fill inflow" style="width:90%"></div></div>
           <div class="bar-value">3.6M</div>
-          <div class="bar-change down">▼</div>
         </div>
         <div class="bar-row inflow-row">
           <div class="bar-rank">02</div>
           <div class="bar-label">GERMANY</div>
           <div class="bar-track"><div class="bar-fill inflow" style="width:63%"></div></div>
           <div class="bar-value">2.5M</div>
-          <div class="bar-change up">▲</div>
         </div>
         <div class="bar-row inflow-row">
           <div class="bar-rank">03</div>
           <div class="bar-label">POLAND</div>
           <div class="bar-track"><div class="bar-fill inflow" style="width:48%"></div></div>
           <div class="bar-value">1.9M</div>
-          <div class="bar-change up">▲▲</div>
         </div>
         <div class="bar-row inflow-row">
           <div class="bar-rank">04</div>
-          <div class="bar-label">COLOMB</div>
+          <div class="bar-label">COLOMBIA</div>
           <div class="bar-track"><div class="bar-fill inflow" style="width:45%"></div></div>
           <div class="bar-value">1.8M</div>
-          <div class="bar-change up">▲</div>
         </div>
         <div class="bar-row inflow-row">
           <div class="bar-rank">05</div>
           <div class="bar-label">PAKISTAN</div>
           <div class="bar-track"><div class="bar-fill inflow" style="width:40%"></div></div>
           <div class="bar-value">1.6M</div>
-          <div class="bar-change down">▼</div>
         </div>
       </div>
     </div>
@@ -2070,12 +2061,10 @@ function filterCountry(country) {
     targetRotationY = 0;
     resetPanelToGlobal();
     filterArcsByCountry('all');
-    resetDotHighlights();
   } else if (countryCoords[country]) {
     // Update panel with country data (no fullscreen)
     updatePanelWithCountry(country);
     filterArcsByCountry(country);
-    highlightCountryDots(country);
     var c = countryCoords[country];
     // Rotate globe to center the country exactly
     // earthObject has -90deg Y rotation, so we compensate
@@ -2085,49 +2074,60 @@ function filterCountry(country) {
     gsap.to(camera.position, {z: 140, duration: 1, ease: 'power2.out'});
   }
   
-  // Update chart highlight - show destinations in inflow chart
+  // Update inflow chart to show country-specific destinations
   var data = COUNTRY_DATA[country];
-  var destNames = [];
-  if (data && data.destinations) {
-    destNames = data.destinations.map(function(d) {
-      return d.split(' ')[0].toLowerCase();
-    });
-  }
   
-  document.querySelectorAll('.bar-row').forEach(function(row) {
-    var label = row.querySelector('.bar-label').textContent.toLowerCase();
-    var isOutflowRow = row.classList.contains('outflow-row');
-    
-    if (country === 'all') {
-      row.style.opacity = '1';
-      row.style.transform = 'scale(1)';
-    } else if (isOutflowRow) {
-      // Outflow chart - highlight selected country
-      if (label.includes(country.substring(0,5))) {
-        row.style.opacity = '1';
-        row.style.transform = 'scale(1.02)';
-        row.style.background = 'rgba(255,51,51,0.15)';
-      } else {
-        row.style.opacity = '0.3';
-        row.style.transform = 'scale(1)';
-        row.style.background = 'transparent';
-      }
-    } else {
-      // Inflow chart - highlight destination countries
-      var isDestination = destNames.some(function(dest) {
-        return label.includes(dest) || dest.includes(label);
-      });
-      if (isDestination) {
-        row.style.opacity = '1';
-        row.style.transform = 'scale(1.02)';
-        row.style.background = 'rgba(0,229,255,0.15)';
-      } else {
-        row.style.opacity = '0.3';
-        row.style.transform = 'scale(1)';
-        row.style.background = 'transparent';
-      }
-    }
+  if (country === 'all') {
+    // Reset to global inflow data
+    document.getElementById('inflow-title').textContent = 'INFLOW (IMMIGRATION)';
+    document.getElementById('inflowChart').innerHTML = generateGlobalInflowChart();
+  } else if (data && data.destinations) {
+    // Show this country's destination countries
+    document.getElementById('inflow-title').textContent = 'TOP DESTINATIONS FROM ' + data.name;
+    document.getElementById('inflowChart').innerHTML = generateDestinationChart(data.destinations);
+  }
+}
+
+// Generate global inflow chart HTML
+function generateGlobalInflowChart() {
+  var globalInflow = [
+    {name: 'TURKEY', value: '3.6M', pct: 90},
+    {name: 'GERMANY', value: '2.5M', pct: 63},
+    {name: 'POLAND', value: '1.9M', pct: 48},
+    {name: 'COLOMBIA', value: '1.8M', pct: 45},
+    {name: 'PAKISTAN', value: '1.6M', pct: 40}
+  ];
+  return globalInflow.map(function(d, i) {
+    return '<div class="bar-row inflow-row">' +
+      '<div class="bar-rank">0' + (i+1) + '</div>' +
+      '<div class="bar-label">' + d.name + '</div>' +
+      '<div class="bar-track"><div class="bar-fill inflow" style="width:' + d.pct + '%"></div></div>' +
+      '<div class="bar-value">' + d.value + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// Generate destination chart for a specific country
+function generateDestinationChart(destinations) {
+  // Parse "Turkey 3.6M" format
+  var maxVal = 0;
+  var parsed = destinations.map(function(d) {
+    var parts = d.match(/(.+)\s+([\d.]+)M?/);
+    var name = parts ? parts[1].toUpperCase() : d;
+    var val = parts ? parseFloat(parts[2]) : 0;
+    if (val > maxVal) maxVal = val;
+    return {name: name, value: parts ? parts[2] + 'M' : '', raw: val};
   });
+  
+  return parsed.map(function(d, i) {
+    var pct = maxVal > 0 ? (d.raw / maxVal * 100) : 0;
+    return '<div class="bar-row inflow-row">' +
+      '<div class="bar-rank">0' + (i+1) + '</div>' +
+      '<div class="bar-label">' + d.name + '</div>' +
+      '<div class="bar-track"><div class="bar-fill inflow" style="width:' + pct + '%"></div></div>' +
+      '<div class="bar-value">' + d.value + '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // Start
