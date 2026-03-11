@@ -395,21 +395,8 @@
     </div>
   </div>
   
-  <div id="settings-left" class="settings">
-    <div class="category">Visuals</div>
-    <a href="#" onclick="setArcMode('bloom');return false" class="bloom">Bloom</a>
-    <a href="#" onclick="setArcMode('rocket');return false" class="rocket">Rocket</a>
-    <a href="#" onclick="setArcMode('snake');return false" class="snake active">Snake</a>
-  </div>
-  
-  <div id="settings-right" class="settings">
-    <div class="category">Colors</div>
-    <a href="#" onclick="setColors('blue');return false" class="blue active">Base</a>
-    <a href="#" onclick="setColors('invert');return false" class="invert">Invert</a>
-    <a href="#" onclick="setColors('random');return false" class="random">Random</a>
-  </div>
-  
-  <div id="palette">
+  <!-- Controls removed for clean UI -->
+  <div id="palette" style="display:none">
     <div id="paletteHighlight" class="color"></div>
     <div id="paletteBase85" class="color"></div>
     <div id="paletteBase75" class="color"></div>
@@ -417,23 +404,7 @@
     <div id="paletteBase" class="color"></div>
   </div>
   
-  <div id="rotationMode">
-    <a href="#" onclick="toggleRotation();return false" class="auto active">Auto</a>
-  </div>
-  
-  <a href="#" id="soundButton" class="on" onclick="toggleSound();return false">
-    <div class="soundBackground"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
-  </a>
-  
-  <div id="social">
-    <a href="https://twitter.com/unhlobal" target="_blank" class="social-icon">𝕏</a>
-    <a href="https://www.unhcr.org" target="_blank" class="social-icon">↗</a>
-  </div>
+  <!-- Removed: rotationMode, soundButton, social -->
   
   <div id="location">
     <div class="title"></div>
