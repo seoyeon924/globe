@@ -1564,7 +1564,7 @@ function createStarfield() {
     positions[i*3+1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i*3+2] = radius * Math.cos(phi);
     
-    sizes[i] = 1.5 + Math.random() * 3;
+    sizes[i] = 3 + Math.random() * 6;
     
     // Blue + white mix
     var colorChoice = Math.random();
@@ -1596,7 +1596,7 @@ function createStarfield() {
       void main() {
         vColor = color;
         vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = size * (300.0 / -mvPosition.z);
+        gl_PointSize = size * (450.0 / -mvPosition.z);
         gl_Position = projectionMatrix * mvPosition;
       }
     `,
