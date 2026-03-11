@@ -2347,11 +2347,11 @@ function animate() {
         var wave = Math.sin((arcSnakeAnim.time - details[i].phase) * 2);
         // Clamp to 0-1 range, only show positive part of wave
         var alpha = Math.max(0, wave);
-        // If filtered (selected country), keep minimum alpha so arcs stay visible
+        // Make arcs always clearly visible
         if (isFiltered) {
-          alpha = 0.4 + alpha * 0.6; // Range: 0.4 to 1.0
+          alpha = 0.8 + alpha * 0.2; // Range: 0.8 to 1.0 (very bright)
         } else if (currentFilterISO === 'ALL') {
-          alpha = alpha * 0.6; // Dimmer when showing all
+          alpha = 0.5 + alpha * 0.5; // Range: 0.5 to 1.0 (visible)
         }
         attrs.alpha.array[i] = alpha;
       }
