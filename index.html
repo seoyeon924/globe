@@ -890,7 +890,6 @@
     vAlpha = alpha;
     vColor = arcColor;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = 3.0 * (200.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
   }
 </script>
@@ -1389,16 +1388,21 @@ function createArcsSnake() {
         var curve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
         var pts = curve.getPoints(CONFIG.arcDivisions);
         
+        // Push as line segments (pairs of vertices)
         for (var i = 0; i < CONFIG.arcDivisions; i++) {
+          // Each segment: from pts[i] to pts[i+1]
           countryVerts.push(pts[i]);
-          arcSnakeVerts.push(pts[i]);
-          countryDetails.push({alpha: 0});
-          arcSnakeDetails.push({alpha: 0, country: countryKey});
+          countryVerts.push(pts[i+1]);
+          countryDetails.push({alpha: 1});
+          countryDetails.push({alpha: 1});
           
-          // Gradient: Red at start -> Mint at end
-          var t = i / CONFIG.arcDivisions;
-          var c = new THREE.Color().lerpColors(colorStart, colorEnd, t);
-          countryColors.push(c.r, c.g, c.b);
+          // Gradient colors for both ends of segment
+          var t1 = i / CONFIG.arcDivisions;
+          var t2 = (i+1) / CONFIG.arcDivisions;
+          var c1 = new THREE.Color().lerpColors(colorStart, colorEnd, t1);
+          var c2 = new THREE.Color().lerpColors(colorStart, colorEnd, t2);
+          countryColors.push(c1.r, c1.g, c1.b);
+          countryColors.push(c2.r, c2.g, c2.b);
         }
       }
     });
@@ -1435,7 +1439,7 @@ function createArcsSnake() {
         fog: true
       });
       
-      var mesh = new THREE.Points(geo, mat);
+      var mesh = new THREE.LineSegments(geo, mat);
       mesh.userData = {country: countryKey, details: countryDetails};
       arcSnakeObject.add(mesh);
       arcsByCountry[countryKey] = mesh;
@@ -1451,18 +1455,19 @@ function createArcsSnake() {
     running: true  // Start immediately
   };
   
-  // Store segment info for animation
+  // Store segment info for animation  
   arcSnakeObject.children.forEach(function(mesh, countryIdx) {
     var details = mesh.userData.details;
-    var segmentSize = CONFIG.arcDivisions;
+    var segmentSize = CONFIG.arcDivisions * 2; // doubled for LineSegments pairs
     var numSegments = Math.floor(details.length / segmentSize);
     
-    // Assign each point a phase offset for wave animation
-    for (var i = 0; i < details.length; i++) {
+    // Assign each vertex pair a phase offset for wave animation
+    for (var i = 0; i < details.length; i += 2) {
       var segIdx = Math.floor(i / segmentSize);
-      var ptIdx = i % segmentSize;
-      // Phase based on segment and point position
-      details[i].phase = (countryIdx * 0.7) + (segIdx * 0.3) + (ptIdx * 0.08);
+      var ptIdx = (i / 2) % CONFIG.arcDivisions;
+      var phase = (countryIdx * 0.5) + (segIdx * 0.2) + (ptIdx * 0.06);
+      details[i].phase = phase;
+      details[i+1].phase = phase;
     }
   });
 }
