@@ -5,17 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>GLOBAL MIGRATION</title>
   <style>
-    @font-face {
-      font-family: 'BlenderPro';
-      src: url('https://db.onlinewebfonts.com/t/1bc78ba7f5c779e5b6b4d5db8d6a0e9e.woff2') format('woff2');
-      font-weight: 500;
-    }
     *{margin:0;padding:0;box-sizing:border-box}
     body{
       background:#000;
       color:#00CCFF;
       overflow:hidden;
-      font-family:'BlenderPro',system-ui,sans-serif;
+      font-family:system-ui,-apple-system,sans-serif;
       text-transform:uppercase;
     }
     a{color:#00CCFF;text-decoration:none;transition:color 0.3s}
@@ -555,8 +550,8 @@
 // ============== CONFIG ==============
 var CONFIG = {
   globeRadius: 65,
-  arcDivisions: 25,
-  arcAnimSpeed: 0.025,
+  arcDivisions: 12,
+  arcAnimSpeed: 0.04,
   autoRotateSpeed: 0.001,
   cameraZ: 250
 };
@@ -637,7 +632,7 @@ function init() {
   camera = new THREE.PerspectiveCamera(45, w/h, 1, 2000);
   camera.position.z = CONFIG.cameraZ;
   
-  renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
+  renderer = new THREE.WebGLRenderer({antialias: false, alpha: false, powerPreference: 'high-performance'});
   renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x000000, 1);
@@ -687,16 +682,11 @@ function createLights() {
 }
 
 function createGlobe() {
-  var geo = new THREE.SphereGeometry(CONFIG.globeRadius, 64, 64);
-  var loader = new THREE.TextureLoader();
+  var geo = new THREE.SphereGeometry(CONFIG.globeRadius, 32, 32);
   
-  // Load earth texture
-  var earthTexture = loader.load('https://unpkg.com/three-globe/example/img/earth-night.jpg');
-  
-  // Inner globe (backside)
+  // Inner globe (backside) - no texture, just color
   var innerMat = new THREE.MeshBasicMaterial({
-    map: earthTexture,
-    color: colorBase75,
+    color: colorBase85,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.BackSide,
@@ -705,26 +695,27 @@ function createGlobe() {
   globeInnerMesh = new THREE.Mesh(geo, innerMat);
   earthObject.add(globeInnerMesh);
   
-  // Outer globe (frontside)
+  // Outer globe (frontside) - wireframe for cyber look
   var outerMat = new THREE.MeshBasicMaterial({
-    map: earthTexture,
-    color: colorBase,
+    color: colorBase75,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.FrontSide,
+    wireframe: true,
+    opacity: 0.3,
     depthWrite: false
   });
   globeOuterMesh = new THREE.Mesh(geo, outerMat);
   earthObject.add(globeOuterMesh);
   
-  // Atmosphere glow (larger sphere behind)
-  var glowGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.15, 32, 32);
+  // Atmosphere glow
+  var glowGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.08, 24, 24);
   var glowMat = new THREE.MeshBasicMaterial({
     color: colorBase,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.BackSide,
-    opacity: 0.15,
+    opacity: 0.1,
     depthWrite: false
   });
   var glowMesh = new THREE.Mesh(glowGeo, glowMat);
@@ -933,8 +924,8 @@ function createArcsSnake() {
   
   origins.forEach(function(origin) {
     dests.forEach(function(dest) {
-      // Multiple arcs per connection for dense glow effect
-      var numArcs = 6 + Math.floor(Math.random() * 4);
+      // Reduced arcs for performance
+      var numArcs = 2 + Math.floor(Math.random() * 2);
       for (var a = 0; a < numArcs; a++) {
         var sLat = origin.lat + (Math.random() - 0.5) * 2;
         var sLng = origin.lng + (Math.random() - 0.5) * 2;
@@ -1017,8 +1008,8 @@ function createArcsRocket() {
   
   origins.forEach(function(origin) {
     dests.forEach(function(dest) {
-      // Multiple arcs for density
-      var numArcs = 5 + Math.floor(Math.random() * 3);
+      // Reduced arcs for performance
+      var numArcs = 2;
       for (var a = 0; a < numArcs; a++) {
         var sLat = origin.lat + (Math.random() - 0.5) * 2;
         var sLng = origin.lng + (Math.random() - 0.5) * 2;
@@ -1101,8 +1092,8 @@ function createArcsBloom() {
   
   origins.forEach(function(origin) {
     dests.forEach(function(dest) {
-      // Multiple arcs for dense bloom effect
-      var numArcs = 6 + Math.floor(Math.random() * 4);
+      // Reduced arcs for performance
+      var numArcs = 3;
       for (var a = 0; a < numArcs; a++) {
         var sLat = origin.lat + (Math.random() - 0.5) * 2;
         var sLng = origin.lng + (Math.random() - 0.5) * 2;
