@@ -216,6 +216,42 @@
     .hud-select:focus{border-color:#00CCFF}
     .hud-select option{background:#0a1a20;color:#00CCFF}
     
+    /* Search Input */
+    .search-container{position:relative}
+    .hud-search{
+      width:100%;padding:6px 8px;
+      background:#0a1a20;color:#00CCFF;
+      border:1px solid rgba(0,204,255,0.3);
+      font-family:'Michroma',sans-serif;
+      font-size:8px;text-transform:uppercase;
+      outline:none;
+    }
+    .hud-search:focus{border-color:#00CCFF}
+    .hud-search::placeholder{color:rgba(0,204,255,0.4)}
+    .search-dropdown{
+      display:none;
+      position:absolute;
+      top:100%;left:0;right:0;
+      max-height:150px;
+      overflow-y:auto;
+      background:#0a1a20;
+      border:1px solid rgba(0,204,255,0.3);
+      border-top:none;
+      z-index:100;
+    }
+    .search-dropdown.active{display:block}
+    .search-item{
+      padding:6px 8px;
+      font-size:8px;
+      color:#00CCFF;
+      cursor:pointer;
+      text-transform:uppercase;
+    }
+    .search-item:hover,.search-item.selected{
+      background:rgba(0,204,255,0.15);
+      color:#fff;
+    }
+    
     /* Bar Chart - Enhanced */
     .bar-chart{margin-top:8px}
     .bar-row{
@@ -758,17 +794,15 @@
       </div>
     </div>
     
-    <!-- Country Filter -->
+    <!-- Country Filter with Search -->
     <div class="data-section">
       <div class="data-title">COUNTRY FILTER</div>
-      <select class="hud-select" id="countryFilter" onchange="filterCountry(this.value)">
+      <div class="search-container">
+        <input type="text" class="hud-search" id="countrySearch" placeholder="Search country..." autocomplete="off">
+        <div class="search-dropdown" id="searchDropdown"></div>
+      </div>
+      <select class="hud-select" id="countryFilter" onchange="filterCountry(this.value)" style="display:none">
         <option value="all">-- ALL REGIONS --</option>
-        <option value="syria">SYRIA</option>
-        <option value="ukraine">UKRAINE</option>
-        <option value="afghanistan">AFGHANISTAN</option>
-        <option value="venezuela">VENEZUELA</option>
-        <option value="sudan">SUDAN</option>
-        <option value="myanmar">MYANMAR</option>
       </select>
     </div>
     
@@ -1359,6 +1393,8 @@ function updateBarCharts() {
   document.getElementById('inflowChart').innerHTML = inflowHTML;
 }
 
+var countryList = [];
+
 function updateCountryFilter() {
   var select = document.getElementById('countryFilter');
   select.innerHTML = '<option value="all">-- ALL REGIONS --</option>';
@@ -1368,6 +1404,8 @@ function updateCountryFilter() {
     .sort(function(a,b){return b[1].total - a[1].total})
     .slice(0, 30);
   
+  countryList = [{iso: 'all', name: 'ALL REGIONS'}];
+  
   topOrigins.forEach(function(e) {
     var iso = e[0];
     var name = COUNTRY_COORDS[iso] ? COUNTRY_COORDS[iso].name.toUpperCase() : iso;
@@ -1375,7 +1413,70 @@ function updateCountryFilter() {
     opt.value = iso.toLowerCase();
     opt.textContent = name;
     select.appendChild(opt);
+    countryList.push({iso: iso.toLowerCase(), name: name});
   });
+  
+  // Setup search
+  setupCountrySearch();
+}
+
+function setupCountrySearch() {
+  var input = document.getElementById('countrySearch');
+  var dropdown = document.getElementById('searchDropdown');
+  if (!input || !dropdown) return;
+  
+  input.value = 'ALL REGIONS';
+  
+  input.addEventListener('focus', function() {
+    this.select();
+    showSearchResults('');
+  });
+  
+  input.addEventListener('input', function() {
+    showSearchResults(this.value);
+  });
+  
+  input.addEventListener('blur', function() {
+    setTimeout(function() { dropdown.classList.remove('active'); }, 200);
+  });
+  
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var first = dropdown.querySelector('.search-item');
+      if (first) first.click();
+    } else if (e.key === 'Escape') {
+      dropdown.classList.remove('active');
+      input.blur();
+    }
+  });
+}
+
+function showSearchResults(query) {
+  var dropdown = document.getElementById('searchDropdown');
+  var q = query.toLowerCase().trim();
+  
+  var filtered = countryList.filter(function(c) {
+    return c.name.toLowerCase().indexOf(q) !== -1;
+  });
+  
+  if (filtered.length === 0) {
+    dropdown.innerHTML = '<div class="search-item" style="opacity:0.5">No results</div>';
+  } else {
+    dropdown.innerHTML = filtered.map(function(c) {
+      return '<div class="search-item" data-iso="' + c.iso + '">' + c.name + '</div>';
+    }).join('');
+    
+    dropdown.querySelectorAll('.search-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        var iso = this.dataset.iso;
+        document.getElementById('countrySearch').value = this.textContent;
+        dropdown.classList.remove('active');
+        filterCountry(iso);
+      });
+    });
+  }
+  
+  dropdown.classList.add('active');
 }
 
 // ============== GLOBALS ==============
