@@ -766,24 +766,49 @@ function latLngToVec3(lat, lng, r, h) {
   );
 }
 
+// Create circular glow texture
+function createGlowTexture(color, softness) {
+  var canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  var ctx = canvas.getContext('2d');
+  var gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, color || 'rgba(255,255,255,1)');
+  gradient.addColorStop(softness || 0.3, color || 'rgba(255,255,255,0.5)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 64, 64);
+  var texture = new THREE.CanvasTexture(canvas);
+  return texture;
+}
+
 function createDots() {
+  // Create textures for different dot types
+  var glowTexWhite = createGlowTexture('rgba(255,255,255,1)', 0.2);
+  var glowTexRed = createGlowTexture('rgba(255,50,50,1)', 0.3);
+  var glowTexSoft = createGlowTexture('rgba(255,100,100,1)', 0.5);
+  
   var dotGeo = new THREE.PlaneGeometry(1, 1);
-  var dotMat = new THREE.MeshBasicMaterial({
-    color: colorAccent,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    side: THREE.DoubleSide,
-    fog: true,
-    depthWrite: false
-  });
   
   LOCATIONS.forEach(function(loc, i) {
     var pos = latLngToVec3(loc.lat, loc.lng, CONFIG.globeRadius, 0.5);
-    var dot = new THREE.Mesh(dotGeo, dotMat.clone());
+    
+    // Main dot with circular texture
+    var dotMat = new THREE.MeshBasicMaterial({
+      map: glowTexRed,
+      color: colorAccent,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      fog: true,
+      depthWrite: false
+    });
+    
+    var dot = new THREE.Mesh(dotGeo, dotMat);
     dot.position.copy(pos);
     dot.lookAt(new THREE.Vector3(0,0,0));
     
-    var scale = loc.type === 2 ? 3 : 2;
+    var scale = loc.type === 2 ? 4 : 2.5;
     dot.scale.set(scale, scale, scale);
     
     dot.userData = {id: i, name: loc.name, type: loc.type};
@@ -795,11 +820,12 @@ function createDots() {
     if (loc.type === 2) {
       // White hot core
       var coreMat = new THREE.MeshBasicMaterial({
+        map: glowTexWhite,
         color: 0xffffff,
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide,
-        opacity: 0.9,
+        opacity: 1,
         depthWrite: false
       });
       var core = new THREE.Mesh(dotGeo, coreMat);
@@ -810,32 +836,34 @@ function createDots() {
       
       // Medium glow
       var glowMat1 = new THREE.MeshBasicMaterial({
-        color: 0xff6666,
+        map: glowTexSoft,
+        color: 0xff4444,
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide,
-        opacity: 0.6,
+        opacity: 0.8,
         depthWrite: false
       });
       var glow1 = new THREE.Mesh(dotGeo, glowMat1);
       glow1.position.copy(pos);
       glow1.lookAt(new THREE.Vector3(0,0,0));
-      glow1.scale.set(5, 5, 5);
+      glow1.scale.set(8, 8, 8);
       earthObject.add(glow1);
       
       // Outer glow
       var glowMat2 = new THREE.MeshBasicMaterial({
+        map: glowTexSoft,
         color: 0xff2222,
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide,
-        opacity: 0.3,
+        opacity: 0.4,
         depthWrite: false
       });
       var glow2 = new THREE.Mesh(dotGeo, glowMat2);
       glow2.position.copy(pos);
       glow2.lookAt(new THREE.Vector3(0,0,0));
-      glow2.scale.set(10, 10, 10);
+      glow2.scale.set(14, 14, 14);
       earthObject.add(glow2);
     }
   });
