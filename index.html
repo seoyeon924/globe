@@ -1032,7 +1032,7 @@
     // Flowing dashed line effect
     float dashSize = 0.15;
     float gapSize = 0.1;
-    float pattern = mod(vLineIndex - uTime * 0.03, dashSize + gapSize);
+    float pattern = mod(vLineIndex - uTime * 0.11, dashSize + gapSize);
     float dash = step(pattern, dashSize);
     
     // Smooth edges
