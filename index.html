@@ -1164,7 +1164,7 @@ function updateBarCharts() {
       '<div class="bar-track"><div class="bar-fill outflow" style="width:' + pct + '%"></div></div>' +
       '<div class="bar-value">' + formatNumber(e[1].total) + '</div></div>';
   });
-  document.getElementById('outflow-chart').innerHTML = outflowHTML;
+  document.getElementById('outflowChart').innerHTML = outflowHTML;
   
   // Top 5 inflow destinations
   var topAsylums = Object.entries(flowsByAsylum)
@@ -1183,7 +1183,7 @@ function updateBarCharts() {
       '<div class="bar-track"><div class="bar-fill inflow" style="width:' + pct + '%"></div></div>' +
       '<div class="bar-value">' + formatNumber(e[1].total) + '</div></div>';
   });
-  document.getElementById('inflow-chart').innerHTML = inflowHTML;
+  document.getElementById('inflowChart').innerHTML = inflowHTML;
 }
 
 function updateCountryFilter() {
@@ -2498,7 +2498,7 @@ function filterCountry(countryInput) {
           '<div class="bar-track"><div class="bar-fill inflow" style="width:' + pct + '%"></div></div>' +
           '<div class="bar-value">' + formatNumber(d[1]) + '</div></div>';
       }).join('');
-      document.getElementById('inflow-chart').innerHTML = html;
+      document.getElementById('inflowChart').innerHTML = html;
     }
     
     // Update outflow KPI for this country
