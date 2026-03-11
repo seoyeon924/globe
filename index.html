@@ -96,14 +96,72 @@
     .settings a.active{background:#00CCFF;color:#000}
     .settings a.active:hover{background:#fff;color:#000}
     
-    /* Minimap */
-    #minimap{
-      position:fixed;bottom:25px;left:50%;
-      transform:translateX(-50%);
-      width:200px;height:90px;
-      overflow:hidden;cursor:pointer;opacity:0.8;
+    /* GOD'S EYE HUD PANELS */
+    .hud-panel{
+      position:fixed;
+      font-family:'Courier New',monospace;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      pointer-events:auto;
     }
-    #minimap svg{width:100%;height:100%}
+    .hud-panel::before{
+      content:'';
+      position:absolute;
+      width:100%;height:100%;
+      border:1px solid rgba(0,204,255,0.3);
+      clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));
+      pointer-events:none;
+    }
+    .hud-label{
+      color:#00CCFF;opacity:0.6;
+      font-size:8px;margin-bottom:4px;
+      display:flex;align-items:center;gap:4px;
+    }
+    .hud-label::before{content:'[';}
+    .hud-label::after{content:']';}
+    .hud-blink{animation:blink 1s infinite}
+    @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0.3}}
+    .hud-value{color:#fff;font-size:11px;margin:2px 0}
+    .hud-sub{color:#00CCFF;opacity:0.5;font-size:9px}
+    .hud-divider{
+      width:100%;height:1px;
+      background:linear-gradient(90deg,transparent,#00CCFF,transparent);
+      margin:6px 0;opacity:0.3;
+    }
+    #hud-left{
+      top:50%;left:20px;
+      transform:translateY(-50%);
+      padding:12px 16px;
+      text-align:left;
+    }
+    #hud-right{
+      top:50%;right:20px;
+      transform:translateY(-50%);
+      padding:12px 16px;
+      text-align:right;
+    }
+    #hud-left .hud-panel-inner,
+    #hud-right .hud-panel-inner{
+      min-width:120px;
+    }
+    .hud-stat{margin:8px 0}
+    .hud-stat-row{display:flex;justify-content:space-between;gap:12px}
+    .hud-corner{
+      position:absolute;width:6px;height:6px;
+      border-color:#00CCFF;border-style:solid;
+    }
+    .hud-corner.tl{top:-1px;left:-1px;border-width:1px 0 0 1px}
+    .hud-corner.tr{top:-1px;right:-1px;border-width:1px 1px 0 0}
+    .hud-corner.bl{bottom:-1px;left:-1px;border-width:0 0 1px 1px}
+    .hud-corner.br{bottom:-1px;right:-1px;border-width:0 1px 1px 0}
+    .scanline{
+      position:absolute;top:0;left:0;right:0;
+      height:2px;background:rgba(0,204,255,0.1);
+      animation:scan 3s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes scan{0%{top:0}100%{top:100%}}
     
     /* Palette */
     #palette{
@@ -293,10 +351,52 @@
     <div class="subtitle">REFUGEE FLOWS 2024</div>
   </a>
   
-  <div id="nav">
-    <div id="nav-inner">
-      <div id="nav-left"><a href="#" onclick="showInfo();return false">ABOUT</a></div>
-      <div id="nav-right"><a href="https://www.unhcr.org" target="_blank">DATA</a></div>
+  <!-- GOD'S EYE HUD PANELS -->
+  <div id="hud-left" class="hud-panel">
+    <div class="scanline"></div>
+    <div class="hud-corner tl"></div>
+    <div class="hud-corner bl"></div>
+    <div class="hud-panel-inner">
+      <div class="hud-label">SYS<span class="hud-blink">_</span>INTEL</div>
+      <div class="hud-divider"></div>
+      <div class="hud-stat">
+        <div class="hud-sub">DISPLACED</div>
+        <div class="hud-value">117.3M</div>
+      </div>
+      <div class="hud-stat">
+        <div class="hud-sub">REFUGEES</div>
+        <div class="hud-value">43.4M</div>
+      </div>
+      <div class="hud-stat">
+        <div class="hud-sub">ASYLUM</div>
+        <div class="hud-value">6.9M</div>
+      </div>
+      <div class="hud-divider"></div>
+      <a href="#" onclick="showInfo();return false" style="color:#00CCFF;font-size:9px;opacity:0.7">► VIEW INTEL</a>
+    </div>
+  </div>
+  
+  <div id="hud-right" class="hud-panel">
+    <div class="scanline"></div>
+    <div class="hud-corner tr"></div>
+    <div class="hud-corner br"></div>
+    <div class="hud-panel-inner">
+      <div class="hud-label">NET<span class="hud-blink">_</span>LINK</div>
+      <div class="hud-divider"></div>
+      <div class="hud-stat">
+        <div class="hud-sub">SOURCE</div>
+        <div class="hud-value">UNHCR</div>
+      </div>
+      <div class="hud-stat">
+        <div class="hud-sub">STATUS</div>
+        <div class="hud-value" style="color:#00FF00">● LIVE</div>
+      </div>
+      <div class="hud-stat">
+        <div class="hud-sub">UPDATED</div>
+        <div class="hud-value">2024.Q4</div>
+      </div>
+      <div class="hud-divider"></div>
+      <a href="https://www.unhcr.org" target="_blank" style="color:#00CCFF;font-size:9px;opacity:0.7">► EXT LINK</a>
     </div>
   </div>
   
@@ -312,74 +412,6 @@
     <a href="#" onclick="setColors('blue');return false" class="blue active">Base</a>
     <a href="#" onclick="setColors('invert');return false" class="invert">Invert</a>
     <a href="#" onclick="setColors('random');return false" class="random">Random</a>
-  </div>
-  
-  <div id="minimap">
-    <svg viewBox="0 0 500 250" xmlns="http://www.w3.org/2000/svg">
-      <!-- World map continents -->
-      <g fill="#00CCFF" opacity="0.5">
-        <!-- North America -->
-        <path d="M20,45 Q25,35 45,30 Q70,28 95,35 Q115,40 125,50 Q130,60 125,75 Q118,90 105,100 Q90,108 75,115 Q60,118 50,110 Q35,100 25,85 Q18,70 20,55 Z"/>
-        <!-- Central America -->
-        <path d="M75,115 Q82,118 88,125 Q92,132 88,140 Q82,145 75,142 Q70,138 72,130 Q74,122 75,115 Z"/>
-        <!-- South America -->
-        <path d="M88,145 Q100,142 110,150 Q118,162 120,180 Q118,200 108,215 Q95,225 80,220 Q68,210 65,190 Q65,170 72,155 Q80,145 88,145 Z"/>
-        <!-- Europe -->
-        <path d="M230,32 Q250,28 270,32 Q285,38 290,50 Q288,62 275,70 Q260,75 245,72 Q232,68 228,58 Q225,45 230,32 Z"/>
-        <!-- Africa -->
-        <path d="M235,78 Q255,75 275,82 Q290,92 295,110 Q295,135 285,158 Q270,178 250,182 Q230,180 218,165 Q210,145 212,120 Q218,95 235,78 Z"/>
-        <!-- Middle East -->
-        <path d="M295,60 Q315,55 330,62 Q340,72 335,85 Q325,95 310,92 Q295,88 292,75 Q290,65 295,60 Z"/>
-        <!-- Russia/North Asia -->
-        <path d="M290,25 Q340,18 400,22 Q450,28 480,38 Q495,45 490,55 Q475,58 440,52 Q390,48 340,45 Q300,42 285,38 Q280,32 290,25 Z"/>
-        <!-- South Asia -->
-        <path d="M340,85 Q360,80 375,88 Q385,100 380,115 Q368,125 350,122 Q335,115 335,100 Q338,90 340,85 Z"/>
-        <!-- East Asia -->
-        <path d="M385,45 Q410,42 430,48 Q445,58 448,72 Q445,85 430,92 Q410,95 395,88 Q382,78 382,62 Q385,50 385,45 Z"/>
-        <!-- Southeast Asia -->
-        <path d="M390,100 Q405,98 415,105 Q422,115 418,128 Q408,138 392,135 Q380,128 382,115 Q385,105 390,100 Z"/>
-        <!-- Australia -->
-        <path d="M405,155 Q430,148 450,158 Q462,172 458,190 Q445,205 420,202 Q398,195 395,175 Q398,160 405,155 Z"/>
-      </g>
-      <!-- Migration flow arcs -->
-      <g stroke="#FF1313" stroke-width="0.8" fill="none" opacity="0.6">
-        <!-- Syria to Europe -->
-        <path d="M310,75 Q280,50 255,55"/>
-        <!-- Syria to Turkey -->
-        <path d="M310,75 Q305,68 295,65"/>
-        <!-- Afghanistan to Pakistan -->
-        <path d="M355,90 Q352,100 350,110"/>
-        <!-- Venezuela to Colombia -->
-        <path d="M85,135 Q82,138 80,142"/>
-        <!-- Ukraine to Poland -->
-        <path d="M285,48 Q275,42 265,45"/>
-        <!-- Sudan to Uganda -->
-        <path d="M275,115 Q268,130 262,145"/>
-        <!-- Myanmar to Bangladesh -->
-        <path d="M385,105 Q375,100 365,98"/>
-      </g>
-      <!-- Crisis hub markers (red glowing dots) -->
-      <g fill="#FF1313">
-        <!-- Syria -->
-        <circle cx="310" cy="75" r="3" opacity="0.9"/>
-        <circle cx="310" cy="75" r="5" opacity="0.4"/>
-        <!-- Venezuela -->
-        <circle cx="85" cy="135" r="2.5" opacity="0.9"/>
-        <circle cx="85" cy="135" r="4" opacity="0.4"/>
-        <!-- Afghanistan -->
-        <circle cx="355" cy="90" r="2.5" opacity="0.9"/>
-        <circle cx="355" cy="90" r="4" opacity="0.4"/>
-        <!-- Ukraine -->
-        <circle cx="285" cy="48" r="2.5" opacity="0.9"/>
-        <circle cx="285" cy="48" r="4" opacity="0.4"/>
-        <!-- Sudan -->
-        <circle cx="275" cy="115" r="2.5" opacity="0.9"/>
-        <circle cx="275" cy="115" r="4" opacity="0.4"/>
-        <!-- Myanmar -->
-        <circle cx="385" cy="105" r="2.5" opacity="0.9"/>
-        <circle cx="385" cy="105" r="4" opacity="0.4"/>
-      </g>
-    </svg>
   </div>
   
   <div id="palette">
