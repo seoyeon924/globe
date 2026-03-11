@@ -1059,10 +1059,11 @@ function createGlobe() {
   // Inner globe (backside)
   var innerMat = new THREE.MeshBasicMaterial({
     map: earthTexture,
-    color: colorBase85,
+    color: colorBase75,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.BackSide,
+    opacity: 0.9,
     depthWrite: false
   });
   globeInnerMesh = new THREE.Mesh(geo, innerMat);
@@ -1075,7 +1076,7 @@ function createGlobe() {
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.FrontSide,
-    opacity: 0.8,
+    opacity: 1.0,
     depthWrite: false
   });
   globeOuterMesh = new THREE.Mesh(geo, outerMat);
@@ -1088,7 +1089,7 @@ function createGlobe() {
     transparent: true,
     blending: THREE.AdditiveBlending,
     wireframe: true,
-    opacity: 0.15,
+    opacity: 0.2,
     depthWrite: false
   });
   var wireMesh = new THREE.Mesh(wireGeo, wireMat);
@@ -1122,11 +1123,11 @@ function createGlobe() {
   
   // Shield for lighting interaction
   var shieldMat = new THREE.MeshPhongMaterial({
-    color: colorBase75,
+    color: colorBase50,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.FrontSide,
-    opacity: 0.4,
+    opacity: 0.5,
     depthWrite: false
   });
   var shieldMesh = new THREE.Mesh(geo, shieldMat);
@@ -1957,8 +1958,8 @@ function filterCountry(country) {
   if (country === 'all') {
     // Reset to default view
     gsap.to(camera.position, {z: 250, duration: 1, ease: 'power2.out'});
-    targetRotationX = 0.45;
-    targetRotationY = 65 * Math.PI/180;
+    targetRotationX = 0.3;
+    targetRotationY = 0;
     resetPanelToGlobal();
     filterArcsByCountry('all');
   } else if (countryCoords[country]) {
@@ -1966,11 +1967,12 @@ function filterCountry(country) {
     updatePanelWithCountry(country);
     filterArcsByCountry(country);
     var c = countryCoords[country];
-    // Rotate globe to focus on country
-    targetRotationY = -(c.lng + 90) * Math.PI/180;
-    targetRotationX = c.lat * Math.PI/180 * 0.5;
+    // Rotate globe to center the country exactly
+    // earthObject has -90deg Y rotation, so we compensate
+    targetRotationY = -c.lng * toRAD;
+    targetRotationX = c.lat * toRAD * 0.8;
     // Zoom in
-    gsap.to(camera.position, {z: 150, duration: 1, ease: 'power2.out'});
+    gsap.to(camera.position, {z: 140, duration: 1, ease: 'power2.out'});
   }
   
   // Update chart highlight (visual feedback)
