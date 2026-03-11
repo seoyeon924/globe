@@ -14,6 +14,18 @@
       font-family:'Michroma',system-ui,sans-serif;
       text-transform:uppercase;
     }
+    body.intro-active #header,
+    body.intro-active #data-panel,
+    body.intro-active #hud-left,
+    body.intro-active #hud-right,
+    body.intro-active #interactive,
+    body.intro-active #author-credit,
+    body.intro-active #location,
+    body.intro-active #tooltip,
+    body.intro-active #detail-panel{
+      opacity:0;
+      pointer-events:none;
+    }
     a{color:#00CCFF;text-decoration:none;transition:color 0.3s}
     a:hover{color:#fff}
     
@@ -29,6 +41,32 @@
       background:radial-gradient(circle at 50% 50%, rgba(255,19,19,0.15) 0%, transparent 50%);
       mix-blend-mode:screen;
     }
+
+    #intro-overlay{
+      position:fixed;
+      inset:0;
+      z-index:1000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:radial-gradient(circle at center, rgba(5,10,18,0.5) 0%, rgba(0,0,0,0.92) 70%);
+      transition:opacity 0.8s ease, visibility 0.8s ease;
+    }
+    #intro-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+    .intro-card{max-width:760px;text-align:center;text-transform:none;color:rgba(255,255,255,0.88)}
+    .intro-title{font-family:'Michroma',sans-serif;font-size:42px;letter-spacing:3px;color:#fff;text-transform:uppercase}
+    .intro-subtitle{margin-top:10px;color:rgba(255,255,255,0.62);font-size:15px;font-style:italic}
+    .intro-description{margin-top:40px;line-height:1.9;color:rgba(255,255,255,0.74);font-size:15px}
+    .intro-start{
+      margin:40px auto 20px;width:185px;height:185px;border-radius:50%;
+      border:1px solid rgba(0,204,255,0.5);
+      background:radial-gradient(circle at 30% 30%, rgba(0,204,255,0.45), rgba(0,36,82,0.8) 55%, rgba(0,0,0,0.9) 100%);
+      color:#fff;font-family:'Michroma',sans-serif;font-size:26px;text-transform:none;cursor:pointer;
+      box-shadow:0 0 28px rgba(0,204,255,0.35);transition:transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .intro-start:hover{transform:scale(1.05);box-shadow:0 0 40px rgba(0,204,255,0.55)}
+    .intro-footnote{margin-top:14px;font-size:11px;color:rgba(255,255,255,0.42);letter-spacing:0.5px}
     
     /* UI Ring - exactly like LAUNCH IT */
     #ui{
@@ -550,6 +588,12 @@
     
     /* ============== MOBILE RESPONSIVE ============== */
     @media (max-width: 768px) {
+      .intro-title{font-size:28px}
+      .intro-subtitle{font-size:12px}
+      .intro-description{font-size:12px;line-height:1.7;margin-top:24px}
+      .intro-start{width:140px;height:140px;font-size:20px;margin-top:28px}
+      .intro-footnote{font-size:9px}
+
       /* Header - smaller, top left */
       #header{
         top:16px;left:16px;right:auto;
@@ -701,7 +745,20 @@
     }
   </style>
 </head>
-<body>
+<body class="intro-active">
+<div id="intro-overlay">
+  <div class="intro-card">
+    <h1 class="intro-title">Migration Atlas</h1>
+    <p class="intro-subtitle">An interactive visualization of global displacement journeys</p>
+    <p class="intro-description">
+      Explore how forced migration flows reshape our world.<br>
+      Track outflow hotspots, asylum destinations, and crisis timelines.<br>
+      Click and drag the globe to discover migration paths yourself.
+    </p>
+    <button class="intro-start" id="introStartButton" type="button">Click<br>to start</button>
+    <p class="intro-footnote">Data source: UNHCR (2020-2025)</p>
+  </div>
+</div>
 <div id="wrapper">
   <div id="interactive"></div>
   <div id="glow-layer"></div>
@@ -2823,6 +2880,13 @@ function generateDestinationChart(iso) {
       '<div class="bar-value">' + formatNumber(d[1]) + '</div></div>';
   }).join('');
 }
+
+function startExperience() {
+  document.body.classList.remove('intro-active');
+  document.getElementById('intro-overlay').classList.add('hidden');
+}
+
+document.getElementById('introStartButton').addEventListener('click', startExperience);
 
 // Start
 init();
