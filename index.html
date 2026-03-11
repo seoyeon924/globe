@@ -980,6 +980,10 @@ var arcRocketObject, arcRocketMesh, arcRocketAnim, arcRocketDetails = [], arcRoc
 var arcBloomObject, arcBloomMesh, arcBloomVerts = [];
 var ringsObject;
 var currentMode = 'snake';
+var raycaster = new THREE.Raycaster();
+raycaster.params.Points = {threshold: 3};
+var mouse = new THREE.Vector2();
+var hasDragged = false;
 
 // ============== INIT ==============
 function init() {
@@ -1705,6 +1709,47 @@ function hideInfo() {
   }});
 }
 
+// Globe interaction - hover tooltip
+function handleGlobeHover(e) {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  
+  var intersects = raycaster.intersectObjects(dotSprites);
+  var tooltip = document.getElementById('tooltip');
+  
+  if (intersects.length > 0) {
+    var dot = intersects[0].object;
+    var name = dot.userData.name;
+    var type = dot.userData.type === 2 ? 'ORIGIN' : 'DESTINATION';
+    tooltip.innerHTML = '<span class="label">' + name + '</span><br><span style="font-size:8px;opacity:0.6">' + type + '</span>';
+    tooltip.style.left = (e.clientX + 15) + 'px';
+    tooltip.style.top = (e.clientY - 10) + 'px';
+    tooltip.classList.add('visible');
+    container.style.cursor = 'pointer';
+  } else {
+    tooltip.classList.remove('visible');
+    container.style.cursor = 'move';
+  }
+}
+
+// Globe interaction - click to filter
+function handleGlobeClick(e) {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  
+  var intersects = raycaster.intersectObjects(dotSprites);
+  if (intersects.length > 0) {
+    var dot = intersects[0].object;
+    var name = dot.userData.name.toLowerCase();
+    if (dot.userData.type === 2 && COUNTRY_DATA[name]) {
+      document.getElementById('countryFilter').value = name;
+      filterCountry(name);
+    }
+  }
+}
+
 function addEvents() {
   var el = container;
   
@@ -1725,8 +1770,19 @@ function addEvents() {
     }
   });
   
-  el.addEventListener('mouseup', function() { isMouseDown = false; });
+  el.addEventListener('mouseup', function(e) { 
+    if (!hasDragged) handleGlobeClick(e);
+    isMouseDown = false; 
+    hasDragged = false;
+  });
   el.addEventListener('mouseleave', function() { isMouseDown = false; });
+  el.addEventListener('mousemove', function(e) {
+    if (isMouseDown) {
+      hasDragged = true;
+    } else {
+      handleGlobeHover(e);
+    }
+  });
   
   // Touch
   el.addEventListener('touchstart', function(e) {
