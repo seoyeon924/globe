@@ -235,8 +235,8 @@
       height:100%;position:absolute;left:0;top:0;
       transition:width 0.5s ease;
     }
-    .bar-fill.outflow{background:linear-gradient(90deg,#FF1313,#FF4444)}
-    .bar-fill.inflow{background:linear-gradient(90deg,#00CCFF,#00FFFF)}
+    .bar-fill.outflow{background:linear-gradient(90deg,#FF1313,#FF6666)}
+    .bar-fill.inflow{background:linear-gradient(90deg,#00FFCC,#66FFE0)}
     .bar-value{
       width:35px;text-align:right;
       color:#fff;font-size:9px;
@@ -251,7 +251,7 @@
       text-align:center;
     }
     .kpi-num{color:#FF1313;font-size:14px;font-weight:bold}
-    .kpi-num.cyan{color:#00CCFF}
+    .kpi-num.cyan{color:#00FFCC}
     .kpi-label{color:#00CCFF;font-size:7px;opacity:0.6;margin-top:2px}
     
     /* COUNTRY DETAIL VIEW */
@@ -330,7 +330,7 @@
       border-radius:2px 2px 0 0;
       transition:height 0.5s ease;
     }
-    .trend-bar.green{background:linear-gradient(180deg,#33ff66,#66ff99)}
+    .trend-bar.mint{background:linear-gradient(180deg,#00FFCC,#66FFE0)}
     .trend-year{
       font-size:9px;color:rgba(255,255,255,0.4);
       margin-top:8px;
@@ -1120,22 +1120,34 @@ function createGlowTexture(color, softness) {
 }
 
 function createDots() {
-  // Create textures for different dot types
-  var glowTexWhite = createGlowTexture('rgba(255,255,255,1)', 0.2);
-  var glowTexRed = createGlowTexture('rgba(255,50,50,1)', 0.3);    // Outflow (emigration)
-  var glowTexGreen = createGlowTexture('rgba(50,255,100,1)', 0.3); // Inflow (immigration)
+  // Create textures - Cyber Mint for inflow (#00FFCC)
+  var glowTexWhite = createGlowTexture('rgba(255,255,255,1)', 0.15);
+  var glowTexRed = createGlowTexture('rgba(255,50,50,1)', 0.3);       // Outflow (emigration)
+  var glowTexMint = createGlowTexture('rgba(0,255,204,1)', 0.3);      // Cyber Mint for inflow
   var glowTexRedSoft = createGlowTexture('rgba(255,100,100,1)', 0.5);
-  var glowTexGreenSoft = createGlowTexture('rgba(100,255,150,1)', 0.5);
+  var glowTexMintSoft = createGlowTexture('rgba(0,255,200,1)', 0.5);
   
   var dotGeo = new THREE.PlaneGeometry(1, 1);
   
+  // Migration intensity data (higher = more migrants)
+  var migrationIntensity = {
+    'Syria': 1.0, 'Ukraine': 0.93, 'Afghanistan': 0.84, 'Venezuela': 0.74, 
+    'Sudan': 0.41, 'Myanmar': 0.19, 'Burkina Faso': 0.15,
+    'Turkey': 0.9, 'Germany': 0.65, 'Poland': 0.5, 'Colombia': 0.47,
+    'Pakistan': 0.42, 'Iran': 0.4, 'Lebanon': 0.35, 'Jordan': 0.3,
+    'USA': 0.28, 'Canada': 0.2, 'UK': 0.18, 'France': 0.17, 'Italy': 0.15,
+    'Spain': 0.14, 'Sweden': 0.12, 'Netherlands': 0.11, 'Austria': 0.1,
+    'Uganda': 0.25, 'Kenya': 0.15, 'Ethiopia': 0.2, 'Brazil': 0.18, 'Australia': 0.12
+  };
+  
   LOCATIONS.forEach(function(loc, i) {
     var pos = latLngToVec3(loc.lat, loc.lng, CONFIG.globeRadius, 0.5);
+    var intensity = migrationIntensity[loc.name] || 0.2;
     
-    // Type 2 = Outflow (RED), Type 1 = Inflow (GREEN)
+    // Type 2 = Outflow (RED), Type 1 = Inflow (CYBER MINT #00FFCC)
     var isOutflow = loc.type === 2;
-    var dotColor = isOutflow ? 0xff3333 : 0x33ff66;
-    var dotTex = isOutflow ? glowTexRed : glowTexGreen;
+    var dotColor = isOutflow ? 0xff3333 : 0x00ffcc;  // Cyber mint
+    var dotTex = isOutflow ? glowTexRed : glowTexMint;
     
     var dotMat = new THREE.MeshBasicMaterial({
       map: dotTex,
@@ -1151,7 +1163,9 @@ function createDots() {
     dot.position.copy(pos);
     dot.lookAt(new THREE.Vector3(0,0,0));
     
-    var scale = isOutflow ? 4 : 2.5;
+    // Scale based on intensity (more migrants = bigger)
+    var baseScale = isOutflow ? 4 : 2.5;
+    var scale = baseScale * (0.6 + intensity * 0.8);
     dot.scale.set(scale, scale, scale);
     
     dot.userData = {id: i, name: loc.name, type: loc.type};
@@ -1159,54 +1173,65 @@ function createDots() {
     dotDetails.push({position: pos.clone(), type: loc.type});
     earthObject.add(dot);
     
-    // Add extra glow layers for origin hubs (type 2)
-    if (loc.type === 2) {
-      // White hot core
+    // Add WHITE HOT CORE for high intensity locations (both outflow and inflow)
+    if (intensity > 0.3) {
+      // White hot core - brighter for higher intensity
+      var coreOpacity = 0.5 + intensity * 0.5;
       var coreMat = new THREE.MeshBasicMaterial({
         map: glowTexWhite,
         color: 0xffffff,
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide,
-        opacity: 1,
+        opacity: coreOpacity,
         depthWrite: false
       });
       var core = new THREE.Mesh(dotGeo, coreMat);
       core.position.copy(pos);
       core.lookAt(new THREE.Vector3(0,0,0));
-      core.scale.set(2, 2, 2);
+      var coreScale = 1.5 + intensity * 1.5;
+      core.scale.set(coreScale, coreScale, coreScale);
       earthObject.add(core);
+    }
+    
+    // Add extra glow layers for high-intensity hubs
+    if (intensity > 0.5) {
+      var glowTex = isOutflow ? glowTexRedSoft : glowTexMintSoft;
+      var glowColor1 = isOutflow ? 0xff4444 : 0x00ddaa;
+      var glowColor2 = isOutflow ? 0xff2222 : 0x00ffcc;
       
-      // Medium glow - RED for outflow
+      // Medium glow - color based on type
       var glowMat1 = new THREE.MeshBasicMaterial({
-        map: glowTexRedSoft,
-        color: 0xff4444,
+        map: glowTex,
+        color: glowColor1,
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide,
-        opacity: 0.8,
+        opacity: 0.6 * intensity,
         depthWrite: false
       });
       var glow1 = new THREE.Mesh(dotGeo, glowMat1);
       glow1.position.copy(pos);
       glow1.lookAt(new THREE.Vector3(0,0,0));
-      glow1.scale.set(8, 8, 8);
+      var glow1Scale = 6 + intensity * 4;
+      glow1.scale.set(glow1Scale, glow1Scale, glow1Scale);
       earthObject.add(glow1);
       
-      // Outer glow - RED for outflow
+      // Outer glow - color based on type
       var glowMat2 = new THREE.MeshBasicMaterial({
-        map: glowTexRedSoft,
-        color: 0xff2222,
+        map: glowTex,
+        color: glowColor2,
         transparent: true,
         blending: THREE.AdditiveBlending,
         side: THREE.DoubleSide,
-        opacity: 0.4,
+        opacity: 0.3 * intensity,
         depthWrite: false
       });
       var glow2 = new THREE.Mesh(dotGeo, glowMat2);
       glow2.position.copy(pos);
       glow2.lookAt(new THREE.Vector3(0,0,0));
-      glow2.scale.set(14, 14, 14);
+      var glow2Scale = 10 + intensity * 6;
+      glow2.scale.set(glow2Scale, glow2Scale, glow2Scale);
       earthObject.add(glow2);
     }
   });
