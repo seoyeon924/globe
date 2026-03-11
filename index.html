@@ -1800,27 +1800,7 @@ function createDots() {
     }
   });
   
-  // Spikes from dots
-  var spikeVerts = [];
-  dotDetails.forEach(function(d, i) {
-    var v1 = dotSprites[i].position.clone();
-    var v2 = v1.clone();
-    var mult = d.type === 2 ? 1.12 : 1.02 + Math.random() * 0.04;
-    v2.multiplyScalar(mult);
-    spikeVerts.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
-  });
-  
-  var spikeGeo = new THREE.BufferGeometry();
-  spikeGeo.setAttribute('position', new THREE.Float32BufferAttribute(spikeVerts, 3));
-  var spikeMat = new THREE.LineBasicMaterial({
-    color: colorAccent,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    fog: true,
-    depthWrite: false
-  });
-  var spikes = new THREE.LineSegments(spikeGeo, spikeMat);
-  earthObject.add(spikes);
+  // Spikes removed - using arcs only
 }
 
 // Store arc meshes by country for filtering
