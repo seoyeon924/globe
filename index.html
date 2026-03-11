@@ -1448,28 +1448,26 @@ function createGlobe() {
   // Use lightweight earth texture from fast CDN
   var earthTexture = loader.load('https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_atmos_2048.jpg');
   
-  // Inner globe (backside)
+  // Inner globe (backside) - very dim to not show through
   var innerMat = new THREE.MeshBasicMaterial({
     map: earthTexture,
-    color: colorBase75,
+    color: 0x111111,
     transparent: true,
-    blending: THREE.AdditiveBlending,
     side: THREE.BackSide,
-    opacity: 0.9,
+    opacity: 0.3,
     depthWrite: false
   });
   globeInnerMesh = new THREE.Mesh(geo, innerMat);
   earthObject.add(globeInnerMesh);
   
-  // Outer globe (frontside) with texture
+  // Outer globe (frontside) with texture - solid, not see-through
   var outerMat = new THREE.MeshBasicMaterial({
     map: earthTexture,
-    color: colorBase50,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
+    color: colorBase,
+    transparent: false,
     side: THREE.FrontSide,
     opacity: 1.0,
-    depthWrite: false
+    depthWrite: true
   });
   globeOuterMesh = new THREE.Mesh(geo, outerMat);
   earthObject.add(globeOuterMesh);
