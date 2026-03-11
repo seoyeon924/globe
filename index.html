@@ -4,187 +4,1176 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>GLOBAL MIGRATION</title>
-  <script src="https://unpkg.com/globe.gl@2.27.0/dist/globe.gl.min.js"></script>
   <style>
+    @font-face {
+      font-family: 'BlenderPro';
+      src: url('https://db.onlinewebfonts.com/t/1bc78ba7f5c779e5b6b4d5db8d6a0e9e.woff2') format('woff2');
+      font-weight: 500;
+    }
     *{margin:0;padding:0;box-sizing:border-box}
-    body{background:#000;color:#fff;overflow:hidden}
-    #globe{width:100vw;height:100vh;filter:brightness(1.1) contrast(1.1)}
-    #ui{position:fixed;top:0;left:0;padding:20px;pointer-events:none;z-index:10;font-family:system-ui,sans-serif}
-    .tag{font-size:9px;letter-spacing:.2em;color:#ff2060;text-transform:uppercase;margin-bottom:6px;text-shadow:0 0 20px #ff2060}
-    h1{font-size:20px;font-weight:700;color:#fff;text-shadow:0 0 30px rgba(255,100,150,0.8)}
-    .sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px}
-    #legend{margin-top:12px;display:flex;gap:15px;font-size:8px;color:rgba(255,255,255,0.5)}
-    .lg{display:flex;align-items:center;gap:5px}
-    .lg i{width:8px;height:8px;border-radius:50%}
-    .origin{background:#fff;box-shadow:0 0 8px #fff}
-    .dest{background:#00ccff;box-shadow:0 0 8px #00ccff}
+    body{
+      background:#000;
+      color:#00CCFF;
+      overflow:hidden;
+      font-family:'BlenderPro',system-ui,sans-serif;
+      text-transform:uppercase;
+    }
+    a{color:#00CCFF;text-decoration:none;transition:color 0.3s}
+    a:hover{color:#fff}
+    
+    #wrapper{position:fixed;top:0;left:0;width:100%;height:100%}
+    #interactive{position:fixed;top:0;left:0;width:100%;height:100%;cursor:move}
+    
+    /* UI Ring - exactly like LAUNCH IT */
+    #ui{
+      position:fixed;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      width:100%;max-width:1400px;min-width:800px;
+      height:auto;padding:5px;
+      text-align:center;pointer-events:none;
+    }
+    #ui svg{margin:25px}
+    .svg-stop{stop-color:#00CCFF}
+    .svg-stop-fade{stop-opacity:0}
+    .faded50{opacity:0.5}
+    .faded75{opacity:0.25}
+    
+    /* Header - LAUNCH IT style */
+    #header{
+      position:fixed;top:25px;left:50%;
+      transform:translateX(-50%);
+      text-align:center;
+      text-shadow:0 0 10px rgba(0,0,0,0.8);
+    }
+    #header strong{font-size:34px;letter-spacing:2px}
+    #header .subtitle{opacity:0.55;font-size:12px;margin-top:4px}
+    
+    /* Navigation */
+    #nav{position:fixed;top:50%;left:0;width:100%;pointer-events:none}
+    #nav-inner{max-width:1400px;margin:0 auto;padding:5px}
+    #nav-left,#nav-right{
+      position:absolute;top:50%;width:125px;
+      margin-top:-25px;
+      text-shadow:0 0 10px rgba(0,0,0,0.8);
+      pointer-events:auto;
+    }
+    #nav-left{left:55px;text-align:left}
+    #nav-right{right:55px;text-align:right}
+    #nav a{font-size:24px;line-height:32px;display:block}
+    
+    /* Settings - exactly like LAUNCH IT */
+    .settings{
+      position:fixed;bottom:45px;
+      font-size:0;text-transform:uppercase;
+      pointer-events:auto;
+    }
+    #settings-left{right:50%;margin-right:115px;text-align:right}
+    #settings-right{left:50%;margin-left:115px;text-align:left}
+    .settings .category{
+      display:block;font-size:12px;line-height:20px;
+      font-weight:700;
+      text-shadow:0 0 10px rgba(0,0,0,0.8);
+    }
+    .settings a{
+      display:inline-block;padding:0 3px;
+      font-size:10px;line-height:15px;
+      margin:0 1px;
+      border:1px solid rgba(0,204,255,0.15);
+      border-radius:3px;
+      transition:all 0.3s;
+    }
+    .settings a:hover{background:transparent;color:#fff}
+    .settings a.active{background:#00CCFF;color:#000}
+    .settings a.active:hover{background:#fff;color:#000}
+    
+    /* Minimap */
+    #minimap{
+      position:fixed;bottom:25px;left:50%;
+      transform:translateX(-50%);
+      width:200px;height:90px;
+      overflow:hidden;cursor:pointer;opacity:0.8;
+    }
+    #minimap svg{width:100%;height:100%}
+    
+    /* Palette */
+    #palette{
+      position:fixed;bottom:10px;left:50%;
+      transform:translateX(-50%);
+      display:flex;gap:4px;
+    }
+    .color{width:5px;height:5px;transition:background 0.5s}
+    #paletteHighlight{background:#FF1313}
+    #paletteBase{background:#33CCFF}
+    #paletteBase50{background:#1a6680}
+    #paletteBase75{background:#0d3340}
+    #paletteBase85{background:#081f26}
+    
+    /* Rotation toggle */
+    #rotationMode{
+      position:fixed;bottom:5px;left:50%;margin-left:35px;
+      font-size:10px;text-transform:uppercase;
+    }
+    #rotationMode a{color:#1a6680}
+    #rotationMode a.active{color:#33CCFF}
+    
+    /* Tooltip */
+    #tooltip{
+      display:none;position:fixed;
+      padding:0 10px;background:#00CCFF;color:#000;
+      font-size:14px;line-height:25px;white-space:nowrap;
+      z-index:100;
+    }
+    
+    /* Location display */
+    #location{
+      display:none;position:fixed;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      text-align:center;text-transform:uppercase;
+      text-shadow:0 0 10px rgba(0,0,0,0.8);
+      color:#FF0000;pointer-events:none;
+    }
+    #location .title{font-size:60px;line-height:60px}
+    #location .booktype{font-size:18px;line-height:24px}
+    
+    /* Social */
+    #social{position:fixed;top:20px;right:15px}
+    #social a{margin-left:10px;font-size:18px}
+    .social-icon{text-decoration:none}
+    
+    /* Sound Button - LAUNCH IT style */
+    #soundButton{
+      display:block;position:fixed;
+      width:15px;height:10px;
+      right:50%;bottom:10px;
+      margin-right:50px;
+      cursor:pointer;
+    }
+    #soundButton .bar{
+      position:relative;float:left;
+      margin-right:1px;width:2px;height:100%;
+    }
+    #soundButton .bar:after{
+      background:#00CCFF;content:'';
+      display:block;position:absolute;
+      bottom:0;left:0;width:1px;height:10%;
+    }
+    #soundButton.on .bar:after{
+      animation:soundBar 1s infinite alternate;
+    }
+    #soundButton .bar:nth-child(2):after{animation-duration:1.04s}
+    #soundButton .bar:nth-child(3):after{animation-duration:0.97s}
+    #soundButton .bar:nth-child(4):after{animation-duration:0.96s}
+    #soundButton .bar:nth-child(5):after{animation-duration:1.03s}
+    #soundButton .bar:nth-child(6):after{animation-duration:1.01s}
+    #soundButton.off .bar:after{height:10%;animation:none}
+    
+    @keyframes soundBar{
+      0%{height:1%}
+      100%{height:100%}
+    }
+    
+    /* Overlay Modal - LAUNCH IT style */
+    #overlay{
+      display:none;position:fixed;top:0;left:0;
+      width:100%;height:100%;
+      background:rgba(0,0,0,0.85);z-index:200;
+    }
+    #overlayRing{
+      position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      width:100%;max-width:800px;min-width:600px;
+      pointer-events:none;
+    }
+    #overlayRing svg{width:100%;height:auto}
+    #overlayInner{
+      position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      width:80%;max-width:600px;
+      text-align:center;color:#fff;
+    }
+    #overlayInner h2{
+      font-size:28px;margin-bottom:20px;color:#00CCFF;
+    }
+    #overlayInner p{
+      font-size:14px;line-height:1.6;margin-bottom:15px;
+      color:rgba(255,255,255,0.8);
+    }
+    #overlayInner strong{color:#00CCFF}
+    #stats-modal{
+      display:flex;justify-content:center;gap:30px;
+      margin:25px 0;
+    }
+    .stat-item{display:flex;flex-direction:column;align-items:center}
+    .stat-item .num{font-size:32px;color:#FF1313;font-weight:700}
+    .stat-item .label{font-size:10px;color:rgba(255,255,255,0.5);margin-top:4px}
+    #datalink{
+      display:inline-block;margin-top:20px;
+      padding:8px 20px;border:1px solid #00CCFF;
+      font-size:12px;transition:all 0.3s;
+    }
+    #datalink:hover{background:#00CCFF;color:#000}
+    #overlay .close{
+      position:absolute;top:20px;right:20px;
+      width:50px;height:50px;cursor:pointer;
+    }
+    #overlay .close svg{width:100%;height:100%}
+    #overlay .close:hover line{stroke:#00CCFF}
+    .faded25{opacity:0.75}
   </style>
 </head>
 <body>
-<div id="globe"></div>
-<div id="ui">
-  <div class="tag">Migration Flow 2024</div>
-  <h1>GLOBAL MIGRATION</h1>
-  <div class="sub">Where refugees go</div>
-  <div id="legend">
-    <div class="lg"><i class="origin"></i>Origin</div>
-    <div class="lg"><i class="dest"></i>Destination</div>
+<div id="wrapper">
+  <div id="interactive"></div>
+  
+  <!-- UI Ring Overlay -->
+  <div id="ui">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="transform:rotate(-90deg)">
+      <defs>
+        <linearGradient id="linearInner">
+          <stop class="svg-stop" offset="0%"/>
+          <stop class="svg-stop svg-stop-fade" offset="35%"/>
+          <stop class="svg-stop svg-stop-fade" offset="65%"/>
+          <stop class="svg-stop" offset="100%"/>
+        </linearGradient>
+        <linearGradient id="linearOuter">
+          <stop class="svg-stop svg-stop-fade" offset="0%"/>
+          <stop class="svg-stop" offset="50%"/>
+          <stop class="svg-stop svg-stop-fade" offset="100%"/>
+        </linearGradient>
+      </defs>
+      <circle cx="500" cy="500" r="380" stroke="url(#linearInner)" stroke-width="0.25" fill="none" class="faded50" id="bracket-inner"/>
+      <circle cx="500" cy="500" r="499" stroke="url(#linearOuter)" stroke-width="0.5" fill="none" class="faded50"/>
+      <circle cx="500" cy="500" r="490" stroke="url(#linearOuter)" stroke-width="0.5" fill="none" class="faded75"/>
+      <circle cx="500" cy="500" r="490" stroke="#00CCFF" stroke-width="1" fill="none" class="svg-ring faded50" id="bracket-left" style="stroke-dasharray:308,3090;stroke-dashoffset:-616"/>
+      <circle cx="500" cy="500" r="490" stroke="#00CCFF" stroke-width="1" fill="none" class="svg-ring faded50" id="bracket-right" style="stroke-dasharray:308,3090;stroke-dashoffset:-2156"/>
+    </svg>
+  </div>
+  
+  <a href="#" id="header">
+    <div><strong>GLOBAL MIGRATION</strong></div>
+    <div class="subtitle">REFUGEE FLOWS 2024</div>
+  </a>
+  
+  <div id="nav">
+    <div id="nav-inner">
+      <div id="nav-left"><a href="#" onclick="showInfo();return false">ABOUT</a></div>
+      <div id="nav-right"><a href="https://www.unhcr.org" target="_blank">DATA</a></div>
+    </div>
+  </div>
+  
+  <div id="settings-left" class="settings">
+    <div class="category">Visuals</div>
+    <a href="#" onclick="setArcMode('bloom');return false" class="bloom">Bloom</a>
+    <a href="#" onclick="setArcMode('rocket');return false" class="rocket">Rocket</a>
+    <a href="#" onclick="setArcMode('snake');return false" class="snake active">Snake</a>
+  </div>
+  
+  <div id="settings-right" class="settings">
+    <div class="category">Colors</div>
+    <a href="#" onclick="setColors('blue');return false" class="blue active">Base</a>
+    <a href="#" onclick="setColors('invert');return false" class="invert">Invert</a>
+    <a href="#" onclick="setColors('random');return false" class="random">Random</a>
+  </div>
+  
+  <div id="minimap">
+    <svg viewBox="0 0 500 250" xmlns="http://www.w3.org/2000/svg">
+      <!-- Simplified world map outline -->
+      <g fill="#00CCFF" class="animate_stroke">
+        <!-- North America -->
+        <path d="M60,60 L80,55 L100,50 L120,52 L130,60 L125,75 L115,85 L100,95 L85,100 L75,110 L65,105 L55,90 L50,75 Z" opacity="0.6"/>
+        <!-- South America -->
+        <path d="M95,115 L105,120 L115,135 L120,155 L115,175 L105,190 L90,195 L80,185 L75,165 L80,145 L85,125 Z" opacity="0.6"/>
+        <!-- Europe -->
+        <path d="M220,45 L240,42 L260,45 L275,50 L280,60 L275,72 L260,78 L245,75 L230,70 L220,60 Z" opacity="0.6"/>
+        <!-- Africa -->
+        <path d="M230,85 L250,82 L270,88 L280,105 L275,130 L265,155 L245,165 L225,160 L215,140 L210,115 L215,95 Z" opacity="0.6"/>
+        <!-- Asia -->
+        <path d="M285,40 L320,35 L360,38 L400,45 L420,55 L415,75 L395,90 L360,95 L320,90 L290,80 L280,60 Z" opacity="0.6"/>
+        <!-- Australia -->
+        <path d="M380,140 L410,135 L430,145 L435,165 L420,180 L395,178 L375,165 L370,150 Z" opacity="0.6"/>
+        <!-- Russia/North Asia -->
+        <path d="M290,30 L340,25 L400,28 L450,35 L470,45 L460,55 L420,50 L360,48 L310,45 L290,40 Z" opacity="0.5"/>
+      </g>
+      <!-- Migration flow indicator lines -->
+      <g stroke="#FF1313" stroke-width="0.5" fill="none" opacity="0.4">
+        <path d="M100,85 Q200,60 260,70"/>
+        <path d="M260,75 Q300,90 380,150"/>
+        <path d="M260,70 Q340,50 400,50"/>
+      </g>
+    </svg>
+  </div>
+  
+  <div id="palette">
+    <div id="paletteHighlight" class="color"></div>
+    <div id="paletteBase85" class="color"></div>
+    <div id="paletteBase75" class="color"></div>
+    <div id="paletteBase50" class="color"></div>
+    <div id="paletteBase" class="color"></div>
+  </div>
+  
+  <div id="rotationMode">
+    <a href="#" onclick="toggleRotation();return false" class="auto active">Auto</a>
+  </div>
+  
+  <a href="#" id="soundButton" class="on" onclick="toggleSound();return false">
+    <div class="soundBackground"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </a>
+  
+  <div id="social">
+    <a href="https://twitter.com/unhlobal" target="_blank" class="social-icon">𝕏</a>
+    <a href="https://www.unhcr.org" target="_blank" class="social-icon">↗</a>
+  </div>
+  
+  <div id="location">
+    <div class="title"></div>
+    <div class="booktype"></div>
+  </div>
+  
+  <div id="tooltip"></div>
+  
+  <!-- Overlay Modal -->
+  <div id="overlay">
+    <div id="overlayRing">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+        <circle cx="500" cy="500" r="490" stroke="none" fill="#000000" class="faded25"/>
+        <circle cx="500" cy="500" r="490" stroke="#00CCFF" stroke-width="1" fill="none" class="svg-ring faded50"/>
+        <circle cx="500" cy="500" r="499" stroke="#00CCFF" stroke-width="0.5" fill="none" class="svg-ring faded75"/>
+      </svg>
+    </div>
+    <div id="overlayInner">
+      <div id="about" class="content">
+        <h2>Global Migration Crisis</h2>
+        <p>This visualization shows the flow of <strong>110+ million</strong> displaced people worldwide as of 2024. Data sourced from UNHCR.</p>
+        <p>The <strong>7 major crisis zones</strong> shown are Syria, Venezuela, Afghanistan, Ukraine, Sudan, Burkina Faso, and Myanmar. Refugees flow to <strong>31+ destination countries</strong> across Europe, Americas, Middle East, and beyond.</p>
+        <div id="stats-modal">
+          <div class="stat-item"><span class="num">110M</span><span class="label">Displaced</span></div>
+          <div class="stat-item"><span class="num">36M</span><span class="label">Refugees</span></div>
+          <div class="stat-item"><span class="num">62M</span><span class="label">Internal</span></div>
+        </div>
+        <a href="https://www.unhcr.org/global-trends" target="_blank" id="datalink">VIEW UNHCR DATA →</a>
+      </div>
+    </div>
+    <a href="#" class="close" onclick="hideInfo();return false">
+      <svg viewBox="0 0 50 50">
+        <polyline class="bracket_x" fill="none" stroke="#00CCFF" stroke-miterlimit="10" points="25,0.5 0.5,0.5 0.5,49.5 25,49.5"/>
+        <polyline class="bracket_x" fill="none" stroke="#00CCFF" stroke-miterlimit="10" points="25,49.5 49.5,49.5 49.5,0.5 25,0.5"/>
+        <line class="line1" fill="none" stroke="#fff" x1="15" y1="15" x2="35" y2="35"/>
+        <line class="line2" fill="none" stroke="#fff" x1="35" y1="15" x2="15" y2="35"/>
+      </svg>
+    </a>
   </div>
 </div>
+
+<!-- Shaders -->
+<script type="x-shader/x-vertex" id="vertexshader">
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+</script>
+<script type="x-shader/x-fragment" id="fragmentshader">
+  varying vec2 vUv;
+  uniform vec3 color;
+  uniform sampler2D texture;
+  void main() {
+    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = gl_FragColor * texture2D(texture, vUv);
+  }
+</script>
+<script type="x-shader/x-vertex" id="particle_vertex">
+  attribute float size;
+  attribute float alpha;
+  varying float vAlpha;
+  void main() {
+    vAlpha = alpha;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = size * (300.0 / -mvPosition.z);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+</script>
+<script type="x-shader/x-fragment" id="particle_fragment">
+  uniform vec3 color;
+  uniform sampler2D texture;
+  varying float vAlpha;
+  void main() {
+    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = gl_FragColor * texture2D(texture, gl_PointCoord);
+    gl_FragColor.a *= vAlpha;
+  }
+</script>
+<script type="x-shader/x-vertex" id="line_vertex">
+  attribute float alpha;
+  varying float vAlpha;
+  void main() {
+    vAlpha = alpha;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+</script>
+<script type="x-shader/x-fragment" id="line_fragment">
+  uniform vec3 color;
+  varying float vAlpha;
+  uniform vec3 fogColor;
+  uniform float fogNear;
+  uniform float fogFar;
+  void main() {
+    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, vAlpha);
+    #ifdef USE_FOG
+      #ifdef USE_LOGDEPTHBUF_EXT
+        float depth = gl_FragDepthEXT / gl_FragCoord.w;
+      #else
+        float depth = gl_FragCoord.z / gl_FragCoord.w;
+      #endif
+      float fogFactor = smoothstep(fogNear, fogFar, depth);
+      gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogFactor);
+    #endif
+  }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
-var hubs = [
-  {lat:35.0,lng:38.0,name:'Syria'},
-  {lat:10.5,lng:-66.9,name:'Venezuela'},
-  {lat:34.5,lng:69.2,name:'Afghanistan'},
-  {lat:50.4,lng:30.5,name:'Ukraine'},
-  {lat:15.5,lng:32.5,name:'Sudan'},
-  {lat:12.0,lng:-1.5,name:'Burkina Faso'},
-  {lat:16.0,lng:96.0,name:'Myanmar'},
+// ============== CONFIG ==============
+var CONFIG = {
+  globeRadius: 65,
+  arcDivisions: 25,
+  arcAnimSpeed: 0.025,
+  autoRotateSpeed: 0.001,
+  cameraZ: 250
+};
+
+// Primary color (LAUNCH IT style cyan)
+var colorPrimary = '#00CCFF';
+var colorHighlight = '#FF1313';
+var colorBase = new THREE.Color(colorPrimary);
+var colorBase50 = new THREE.Color('#1a6680');
+var colorBase75 = new THREE.Color('#0d3340');
+var colorBase85 = new THREE.Color('#081f26');
+var colorAccent = new THREE.Color(colorHighlight);
+
+// ============== DATA ==============
+// Central hub (like Shane's Toronto)
+var HUB = {lat: 35.0, lng: 38.0, name: 'Syria'}; // Main origin
+
+var LOCATIONS = [
+  // Crisis origins (red dots)
+  {lat:35.0, lng:38.0, name:'Syria', type:2},
+  {lat:10.5, lng:-66.9, name:'Venezuela', type:2},
+  {lat:34.5, lng:69.2, name:'Afghanistan', type:2},
+  {lat:50.4, lng:30.5, name:'Ukraine', type:2},
+  {lat:15.5, lng:32.5, name:'Sudan', type:2},
+  {lat:12.0, lng:-1.5, name:'Burkina Faso', type:2},
+  {lat:16.0, lng:96.0, name:'Myanmar', type:2},
+  // Destinations (smaller dots)
+  {lat:52.5, lng:13.4, name:'Germany', type:1},
+  {lat:48.9, lng:2.4, name:'France', type:1},
+  {lat:51.5, lng:-0.1, name:'UK', type:1},
+  {lat:41.9, lng:12.5, name:'Italy', type:1},
+  {lat:40.4, lng:-3.7, name:'Spain', type:1},
+  {lat:52.2, lng:21.0, name:'Poland', type:1},
+  {lat:59.3, lng:18.1, name:'Sweden', type:1},
+  {lat:52.4, lng:4.9, name:'Netherlands', type:1},
+  {lat:48.2, lng:16.4, name:'Austria', type:1},
+  {lat:41.0, lng:29.0, name:'Turkey', type:1},
+  {lat:33.9, lng:35.5, name:'Lebanon', type:1},
+  {lat:31.9, lng:35.9, name:'Jordan', type:1},
+  {lat:40.7, lng:-74.0, name:'USA', type:1},
+  {lat:43.7, lng:-79.4, name:'Canada', type:1},
+  {lat:4.6, lng:-74.1, name:'Colombia', type:1},
+  {lat:-23.6, lng:-46.6, name:'Brazil', type:1},
+  {lat:-33.9, lng:151.2, name:'Australia', type:1},
+  {lat:33.7, lng:73.1, name:'Pakistan', type:1},
+  {lat:35.7, lng:51.4, name:'Iran', type:1},
+  {lat:0.3, lng:32.6, name:'Uganda', type:1},
+  {lat:-1.3, lng:36.8, name:'Kenya', type:1},
+  {lat:9.0, lng:38.7, name:'Ethiopia', type:1},
 ];
 
-// Fixed destinations with names
-var destinations = [
-  // Europe (top destinations)
-  {lat:52.5,lng:13.4,name:'Germany',count:0},
-  {lat:48.9,lng:2.4,name:'France',count:0},
-  {lat:51.5,lng:-0.1,name:'UK',count:0},
-  {lat:41.9,lng:12.5,name:'Italy',count:0},
-  {lat:40.4,lng:-3.7,name:'Spain',count:0},
-  {lat:52.2,lng:21.0,name:'Poland',count:0},
-  {lat:59.3,lng:18.1,name:'Sweden',count:0},
-  {lat:52.4,lng:4.9,name:'Netherlands',count:0},
-  {lat:48.2,lng:16.4,name:'Austria',count:0},
-  {lat:46.9,lng:7.4,name:'Switzerland',count:0},
-  {lat:50.8,lng:4.4,name:'Belgium',count:0},
-  {lat:38.7,lng:-9.1,name:'Portugal',count:0},
-  {lat:37.98,lng:23.7,name:'Greece',count:0},
-  // Middle East
-  {lat:41.0,lng:29.0,name:'Turkey',count:0},
-  {lat:33.9,lng:35.5,name:'Lebanon',count:0},
-  {lat:31.9,lng:35.9,name:'Jordan',count:0},
-  {lat:30.0,lng:31.2,name:'Egypt',count:0},
-  // Americas
-  {lat:40.7,lng:-74.0,name:'USA-NY',count:0},
-  {lat:34.1,lng:-118.2,name:'USA-LA',count:0},
-  {lat:43.7,lng:-79.4,name:'Canada',count:0},
-  {lat:4.6,lng:-74.1,name:'Colombia',count:0},
-  {lat:-12.0,lng:-77.0,name:'Peru',count:0},
-  {lat:-23.6,lng:-46.6,name:'Brazil',count:0},
-  {lat:-33.5,lng:-70.7,name:'Chile',count:0},
-  // Asia Pacific
-  {lat:-33.9,lng:151.2,name:'Australia',count:0},
-  {lat:33.7,lng:73.1,name:'Pakistan',count:0},
-  {lat:35.7,lng:51.4,name:'Iran',count:0},
-  // Africa
-  {lat:0.3,lng:32.6,name:'Uganda',count:0},
-  {lat:-1.3,lng:36.8,name:'Kenya',count:0},
-  {lat:9.0,lng:38.7,name:'Ethiopia',count:0},
-  {lat:-26.2,lng:28.0,name:'South Africa',count:0},
-];
+// ============== GLOBALS ==============
+var container, camera, scene, renderer;
+var rotationObject, earthObject;
+var mouseX = 0, mouseY = 0, mouseXOnDown = 0, mouseYOnDown = 0;
+var targetRotationX = 0.45, targetRotationY = 65 * Math.PI/180;
+var targetRotationXOnDown = 0, targetRotationYOnDown = 0;
+var isMouseDown = false, isAutoRotate = true;
+var toRAD = Math.PI / 180;
 
-// Generate arcs and count destinations
-var arcs = [];
-hubs.forEach(function(hub) {
-  destinations.forEach(function(dest) {
-    var dist = Math.sqrt(Math.pow(hub.lat-dest.lat,2) + Math.pow(hub.lng-dest.lng,2));
-    if (dist > 5 && Math.random() > 0.3) {
-      dest.count++;
-      arcs.push({
-        startLat: hub.lat + (Math.random()-0.5)*1,
-        startLng: hub.lng + (Math.random()-0.5)*1,
-        endLat: dest.lat,
-        endLng: dest.lng,
-        dist: dist
+// Objects
+var globeInnerMesh, globeOuterMesh, globeCloudMesh;
+var dotSprites = [], dotDetails = [];
+var arcSnakeObject, arcSnakeMesh, arcSnakeAnim, arcSnakeDetails = [], arcSnakeVerts = [];
+var arcRocketObject, arcRocketMesh, arcRocketAnim, arcRocketDetails = [], arcRocketVerts = [];
+var arcBloomObject, arcBloomMesh, arcBloomVerts = [];
+var ringsObject;
+var currentMode = 'snake';
+
+// ============== INIT ==============
+function init() {
+  container = document.getElementById('interactive');
+  var w = window.innerWidth, h = window.innerHeight;
+  
+  scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x000000, 0, 400);
+  
+  camera = new THREE.PerspectiveCamera(45, w/h, 1, 2000);
+  camera.position.z = CONFIG.cameraZ;
+  
+  renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 1);
+  container.appendChild(renderer.domElement);
+  
+  createGroups();
+  createLights();
+  createGlobe();
+  createRings();
+  createDots();
+  createArcsSnake();
+  createArcsRocket();
+  createArcsBloom();
+  
+  addEvents();
+  animate();
+  
+  // Start animation
+  setTimeout(function() {
+    arcSnakeAnim.play();
+  }, 500);
+}
+
+function createGroups() {
+  rotationObject = new THREE.Group();
+  rotationObject.rotation.x = targetRotationX;
+  rotationObject.rotation.y = targetRotationY;
+  scene.add(rotationObject);
+  
+  earthObject = new THREE.Group();
+  earthObject.rotation.y = -90 * toRAD;
+  rotationObject.add(earthObject);
+}
+
+function createLights() {
+  var l1 = new THREE.PointLight(colorBase, 1.25, 400, 2);
+  l1.position.set(-50, 150, 75);
+  scene.add(l1);
+  
+  var l2 = new THREE.PointLight(colorBase, 1.25, 400, 2);
+  l2.position.set(100, 50, 50);
+  scene.add(l2);
+  
+  var l3 = new THREE.PointLight(colorBase, 1.25, 400, 2);
+  l3.position.set(0, -300, 50);
+  scene.add(l3);
+}
+
+function createGlobe() {
+  var geo = new THREE.SphereGeometry(CONFIG.globeRadius, 64, 64);
+  var loader = new THREE.TextureLoader();
+  
+  // Load earth texture
+  var earthTexture = loader.load('https://unpkg.com/three-globe/example/img/earth-night.jpg');
+  
+  // Inner globe (backside)
+  var innerMat = new THREE.MeshBasicMaterial({
+    map: earthTexture,
+    color: colorBase75,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+    depthWrite: false
+  });
+  globeInnerMesh = new THREE.Mesh(geo, innerMat);
+  earthObject.add(globeInnerMesh);
+  
+  // Outer globe (frontside)
+  var outerMat = new THREE.MeshBasicMaterial({
+    map: earthTexture,
+    color: colorBase,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.FrontSide,
+    depthWrite: false
+  });
+  globeOuterMesh = new THREE.Mesh(geo, outerMat);
+  earthObject.add(globeOuterMesh);
+  
+  // Atmosphere glow (larger sphere behind)
+  var glowGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.15, 32, 32);
+  var glowMat = new THREE.MeshBasicMaterial({
+    color: colorBase,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+    opacity: 0.15,
+    depthWrite: false
+  });
+  var glowMesh = new THREE.Mesh(glowGeo, glowMat);
+  earthObject.add(glowMesh);
+  
+  // Shield for lighting interaction
+  var shieldMat = new THREE.MeshPhongMaterial({
+    color: colorBase75,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.FrontSide,
+    opacity: 0.4,
+    depthWrite: false
+  });
+  var shieldMesh = new THREE.Mesh(geo, shieldMat);
+  scene.add(shieldMesh);
+}
+
+function createRings() {
+  ringsObject = new THREE.Group();
+  scene.add(ringsObject);
+  
+  var ringGeo1 = new THREE.RingGeometry(200, 195, 128);
+  var ringGeo2 = new THREE.RingGeometry(100, 98, 128);
+  
+  var ringMat1 = new THREE.MeshBasicMaterial({
+    color: colorBase75,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: true,
+    depthWrite: false
+  });
+  
+  var ringMat2 = new THREE.MeshBasicMaterial({
+    color: colorBase50,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: true,
+    depthWrite: false
+  });
+  
+  var ring1 = new THREE.Mesh(ringGeo1, ringMat1);
+  ring1.rotation.x = 90 * toRAD;
+  ring1.position.y = 90;
+  ringsObject.add(ring1);
+  
+  var ring2 = ring1.clone();
+  ring2.position.y = -90;
+  ringsObject.add(ring2);
+  
+  var ring3 = new THREE.Mesh(ringGeo2, ringMat2);
+  ring3.rotation.x = 90 * toRAD;
+  ring3.position.y = 100;
+  ringsObject.add(ring3);
+  
+  var ring4 = ring3.clone();
+  ring4.position.y = -100;
+  ringsObject.add(ring4);
+}
+
+function latLngToVec3(lat, lng, r, h) {
+  var phi = (90 - lat) * toRAD;
+  var theta = (lng + 180) * toRAD;
+  var rad = r + (h || 0);
+  return new THREE.Vector3(
+    -rad * Math.sin(phi) * Math.cos(theta),
+    rad * Math.cos(phi),
+    rad * Math.sin(phi) * Math.sin(theta)
+  );
+}
+
+function createDots() {
+  var dotGeo = new THREE.PlaneGeometry(1, 1);
+  var dotMat = new THREE.MeshBasicMaterial({
+    color: colorAccent,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    fog: true,
+    depthWrite: false
+  });
+  
+  LOCATIONS.forEach(function(loc, i) {
+    var pos = latLngToVec3(loc.lat, loc.lng, CONFIG.globeRadius, 0.5);
+    var dot = new THREE.Mesh(dotGeo, dotMat.clone());
+    dot.position.copy(pos);
+    dot.lookAt(new THREE.Vector3(0,0,0));
+    
+    var scale = loc.type === 2 ? 3 : 2;
+    dot.scale.set(scale, scale, scale);
+    
+    dot.userData = {id: i, name: loc.name, type: loc.type};
+    dotSprites.push(dot);
+    dotDetails.push({position: pos.clone(), type: loc.type});
+    earthObject.add(dot);
+    
+    // Add extra glow layers for origin hubs (type 2)
+    if (loc.type === 2) {
+      // White hot core
+      var coreMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        opacity: 0.9,
+        depthWrite: false
       });
+      var core = new THREE.Mesh(dotGeo, coreMat);
+      core.position.copy(pos);
+      core.lookAt(new THREE.Vector3(0,0,0));
+      core.scale.set(2, 2, 2);
+      earthObject.add(core);
+      
+      // Medium glow
+      var glowMat1 = new THREE.MeshBasicMaterial({
+        color: 0xff6666,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        opacity: 0.6,
+        depthWrite: false
+      });
+      var glow1 = new THREE.Mesh(dotGeo, glowMat1);
+      glow1.position.copy(pos);
+      glow1.lookAt(new THREE.Vector3(0,0,0));
+      glow1.scale.set(5, 5, 5);
+      earthObject.add(glow1);
+      
+      // Outer glow
+      var glowMat2 = new THREE.MeshBasicMaterial({
+        color: 0xff2222,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        side: THREE.DoubleSide,
+        opacity: 0.3,
+        depthWrite: false
+      });
+      var glow2 = new THREE.Mesh(dotGeo, glowMat2);
+      glow2.position.copy(pos);
+      glow2.lookAt(new THREE.Vector3(0,0,0));
+      glow2.scale.set(10, 10, 10);
+      earthObject.add(glow2);
     }
   });
-});
+  
+  // Spikes from dots
+  var spikeVerts = [];
+  dotDetails.forEach(function(d, i) {
+    var v1 = dotSprites[i].position.clone();
+    var v2 = v1.clone();
+    var mult = d.type === 2 ? 1.12 : 1.02 + Math.random() * 0.04;
+    v2.multiplyScalar(mult);
+    spikeVerts.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z);
+  });
+  
+  var spikeGeo = new THREE.BufferGeometry();
+  spikeGeo.setAttribute('position', new THREE.Float32BufferAttribute(spikeVerts, 3));
+  var spikeMat = new THREE.LineBasicMaterial({
+    color: colorAccent,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    fog: true,
+    depthWrite: false
+  });
+  var spikes = new THREE.LineSegments(spikeGeo, spikeMat);
+  earthObject.add(spikes);
+}
 
-// Find max count for normalization
-var maxCount = Math.max.apply(null, destinations.map(function(d){return d.count}));
-
-// Create points array
-var allPoints = [];
-
-// Hub points (origin - white/red glow)
-hubs.forEach(function(h) {
-  allPoints.push({lat:h.lat,lng:h.lng,size:0.5,color:'rgba(255,255,255,1)',alt:0.04});
-  allPoints.push({lat:h.lat,lng:h.lng,size:0.9,color:'rgba(255,255,255,0.8)',alt:0.035});
-  allPoints.push({lat:h.lat,lng:h.lng,size:1.4,color:'rgba(255,200,210,0.6)',alt:0.03});
-  allPoints.push({lat:h.lat,lng:h.lng,size:2.0,color:'rgba(255,100,140,0.4)',alt:0.025});
-  allPoints.push({lat:h.lat,lng:h.lng,size:3.0,color:'rgba(255,50,80,0.2)',alt:0.02});
-});
-
-// Destination points (cyan glow - size based on immigrant count)
-destinations.forEach(function(d) {
-  if (d.count > 0) {
-    var intensity = d.count / maxCount;
-    var baseSize = 0.3 + intensity * 1.2;
-    
-    // Core
-    allPoints.push({
-      lat:d.lat,lng:d.lng,
-      size:baseSize * 0.4,
-      color:'rgba(150,255,255,'+(0.7+intensity*0.3)+')',
-      alt:0.025
+function createArcsSnake() {
+  arcSnakeObject = new THREE.Group();
+  earthObject.add(arcSnakeObject);
+  
+  // Create arcs from each origin to destinations
+  var origins = LOCATIONS.filter(function(l) { return l.type === 2; });
+  var dests = LOCATIONS.filter(function(l) { return l.type === 1; });
+  
+  origins.forEach(function(origin) {
+    dests.forEach(function(dest) {
+      // Multiple arcs per connection for dense glow effect
+      var numArcs = 6 + Math.floor(Math.random() * 4);
+      for (var a = 0; a < numArcs; a++) {
+        var sLat = origin.lat + (Math.random() - 0.5) * 2;
+        var sLng = origin.lng + (Math.random() - 0.5) * 2;
+        var eLat = dest.lat + (Math.random() - 0.5) * 1.5;
+        var eLng = dest.lng + (Math.random() - 0.5) * 1.5;
+        
+        var start = latLngToVec3(sLat, sLng, CONFIG.globeRadius, 0.5);
+        var end = latLngToVec3(eLat, eLng, CONFIG.globeRadius, 0.5);
+        
+        var dist = start.distanceTo(end);
+        var h = 1 + dist * 0.0065;
+        
+        var mid = new THREE.Vector3().addVectors(start, end).normalize().multiplyScalar(CONFIG.globeRadius * h);
+        var h2 = 1 + dist * 0.0065 * 0.5;
+        var ctrl1 = new THREE.Vector3().addVectors(start, mid).normalize().multiplyScalar(CONFIG.globeRadius * h2);
+        var ctrl2 = new THREE.Vector3().addVectors(mid, end).normalize().multiplyScalar(CONFIG.globeRadius * h2);
+        
+        var curve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
+        var pts = curve.getPoints(CONFIG.arcDivisions);
+        
+        for (var i = 0; i < CONFIG.arcDivisions; i++) {
+          arcSnakeVerts.push(pts[i]);
+          arcSnakeDetails.push({alpha: 0});
+        }
+      }
     });
-    // Mid glow
-    allPoints.push({
-      lat:d.lat,lng:d.lng,
-      size:baseSize * 0.7,
-      color:'rgba(80,220,255,'+(0.4+intensity*0.3)+')',
-      alt:0.02
-    });
-    // Outer glow
-    allPoints.push({
-      lat:d.lat,lng:d.lng,
-      size:baseSize,
-      color:'rgba(0,180,255,'+(0.15+intensity*0.2)+')',
-      alt:0.015
-    });
+  });
+  
+  var geo = new THREE.BufferGeometry();
+  var pos = new Float32Array(arcSnakeVerts.length * 3);
+  var alp = new Float32Array(arcSnakeVerts.length);
+  
+  for (var i = 0; i < arcSnakeVerts.length; i++) {
+    pos[i*3] = arcSnakeVerts[i].x;
+    pos[i*3+1] = arcSnakeVerts[i].y;
+    pos[i*3+2] = arcSnakeVerts[i].z;
+    alp[i] = 0;
   }
-});
-
-var globe = Globe()
-  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
-  .backgroundColor('#000000')
-  .showAtmosphere(true)
-  .atmosphereColor('#003355')
-  .atmosphereAltitude(0.08)
   
-  // Arcs
-  .arcsData(arcs)
-  .arcStartLat('startLat')
-  .arcStartLng('startLng')
-  .arcEndLat('endLat')
-  .arcEndLng('endLng')
-  .arcColor(function() {
-    return ['rgba(255,180,200,0.6)', 'rgba(255,40,80,0.25)'];
-  })
-  .arcStroke(0.12)
-  .arcAltitude(function(d) { return 0.06 + d.dist * 0.002; })
-  .arcDashLength(0.4)
-  .arcDashGap(0.1)
-  .arcDashAnimateTime(5000)
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('alpha', new THREE.BufferAttribute(alp, 1));
   
-  // All points (hubs + destinations)
-  .pointsData(allPoints)
-  .pointLat('lat')
-  .pointLng('lng')
-  .pointRadius('size')
-  .pointColor('color')
-  .pointAltitude('alt')
+  var mat = new THREE.ShaderMaterial({
+    uniforms: {
+      color: {value: colorAccent},
+      fogColor: {value: scene.fog.color},
+      fogNear: {value: scene.fog.near},
+      fogFar: {value: scene.fog.far}
+    },
+    vertexShader: document.getElementById('line_vertex').textContent,
+    fragmentShader: document.getElementById('line_fragment').textContent,
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    depthTest: false,
+    fog: true
+  });
   
-  (document.getElementById('globe'));
+  arcSnakeMesh = new THREE.Line(geo, mat);
+  arcSnakeObject.add(arcSnakeMesh);
+  
+  // Animation
+  arcSnakeAnim = gsap.timeline({paused: true, repeat: -1, onUpdate: function() {
+    var attrs = arcSnakeMesh.geometry.attributes;
+    for (var i = 0; i < arcSnakeDetails.length; i++) {
+      attrs.alpha.array[i] = arcSnakeDetails[i].alpha;
+    }
+    attrs.alpha.needsUpdate = true;
+  }});
+  arcSnakeAnim.staggerTo(arcSnakeDetails, 0.25, {alpha: 0}, CONFIG.arcAnimSpeed, 2);
+  arcSnakeAnim.staggerFromTo(arcSnakeDetails, 0.25, {alpha: 0}, {alpha: 1}, CONFIG.arcAnimSpeed, 0);
+}
 
-globe.controls().autoRotate = true;
-globe.controls().autoRotateSpeed = 0.06;
-globe.pointOfView({lat:30,lng:20,altitude:2.0});
+function createArcsRocket() {
+  arcRocketObject = new THREE.Group();
+  arcRocketObject.visible = false;
+  earthObject.add(arcRocketObject);
+  
+  var origins = LOCATIONS.filter(function(l) { return l.type === 2; });
+  var dests = LOCATIONS.filter(function(l) { return l.type === 1; });
+  
+  origins.forEach(function(origin) {
+    dests.forEach(function(dest) {
+      // Multiple arcs for density
+      var numArcs = 5 + Math.floor(Math.random() * 3);
+      for (var a = 0; a < numArcs; a++) {
+        var sLat = origin.lat + (Math.random() - 0.5) * 2;
+        var sLng = origin.lng + (Math.random() - 0.5) * 2;
+        var eLat = dest.lat + (Math.random() - 0.5) * 1.5;
+        var eLng = dest.lng + (Math.random() - 0.5) * 1.5;
+        
+        var start = latLngToVec3(sLat, sLng, CONFIG.globeRadius, 0.5);
+        var end = latLngToVec3(eLat, eLng, CONFIG.globeRadius, 0.5);
+        
+        var dist = start.distanceTo(end);
+        var h = 1 + dist * 0.006;
+        
+        var mid = new THREE.Vector3().addVectors(start, end).normalize().multiplyScalar(CONFIG.globeRadius * h);
+        var h2 = 1 + dist * 0.006 * 0.5;
+        var ctrl1 = new THREE.Vector3().addVectors(start, mid).normalize().multiplyScalar(CONFIG.globeRadius * h2);
+        var ctrl2 = new THREE.Vector3().addVectors(mid, end).normalize().multiplyScalar(CONFIG.globeRadius * h2);
+        
+        var curve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
+        var pts = curve.getPoints(CONFIG.arcDivisions);
+        
+        for (var i = 0; i < CONFIG.arcDivisions; i++) {
+          arcRocketVerts.push(pts[i], pts[i+1]);
+          arcRocketDetails.push({alpha: 0}, {alpha: 0});
+        }
+      }
+    });
+  });
+  
+  var geo = new THREE.BufferGeometry();
+  var pos = new Float32Array(arcRocketVerts.length * 3);
+  var alp = new Float32Array(arcRocketVerts.length);
+  
+  for (var i = 0; i < arcRocketVerts.length; i++) {
+    pos[i*3] = arcRocketVerts[i].x;
+    pos[i*3+1] = arcRocketVerts[i].y;
+    pos[i*3+2] = arcRocketVerts[i].z;
+    alp[i] = 0;
+  }
+  
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('alpha', new THREE.BufferAttribute(alp, 1));
+  
+  var mat = new THREE.ShaderMaterial({
+    uniforms: {
+      color: {value: colorAccent},
+      fogColor: {value: scene.fog.color},
+      fogNear: {value: scene.fog.near},
+      fogFar: {value: scene.fog.far}
+    },
+    vertexShader: document.getElementById('line_vertex').textContent,
+    fragmentShader: document.getElementById('line_fragment').textContent,
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    depthTest: false,
+    fog: true
+  });
+  
+  arcRocketMesh = new THREE.LineSegments(geo, mat);
+  arcRocketObject.add(arcRocketMesh);
+  
+  arcRocketAnim = gsap.timeline({paused: true, repeat: -1, onUpdate: function() {
+    var attrs = arcRocketMesh.geometry.attributes;
+    for (var i = 0; i < arcRocketDetails.length; i++) {
+      attrs.alpha.array[i] = arcRocketDetails[i].alpha;
+    }
+    attrs.alpha.needsUpdate = true;
+  }});
+  arcRocketAnim.staggerTo(arcRocketDetails, 0.25, {alpha: 0}, CONFIG.arcAnimSpeed, 2);
+  arcRocketAnim.staggerFromTo(arcRocketDetails, 0.25, {alpha: 0}, {alpha: 1}, CONFIG.arcAnimSpeed, 0);
+  arcRocketAnim.timeScale(2);
+}
 
-window.onresize = function(){
-  globe.width(window.innerWidth);
-  globe.height(window.innerHeight);
-};
+function createArcsBloom() {
+  arcBloomObject = new THREE.Group();
+  arcBloomObject.visible = false;
+  earthObject.add(arcBloomObject);
+  
+  var origins = LOCATIONS.filter(function(l) { return l.type === 2; });
+  var dests = LOCATIONS.filter(function(l) { return l.type === 1; });
+  
+  origins.forEach(function(origin) {
+    dests.forEach(function(dest) {
+      // Multiple arcs for dense bloom effect
+      var numArcs = 6 + Math.floor(Math.random() * 4);
+      for (var a = 0; a < numArcs; a++) {
+        var sLat = origin.lat + (Math.random() - 0.5) * 2;
+        var sLng = origin.lng + (Math.random() - 0.5) * 2;
+        var eLat = dest.lat + (Math.random() - 0.5) * 1.5;
+        var eLng = dest.lng + (Math.random() - 0.5) * 1.5;
+        
+        var start = latLngToVec3(sLat, sLng, CONFIG.globeRadius, 0.5);
+        var end = latLngToVec3(eLat, eLng, CONFIG.globeRadius, 0.5);
+        
+        var dist = start.distanceTo(end);
+        var h = 1 + dist * 0.005;
+        
+        var mid = new THREE.Vector3().addVectors(start, end).normalize().multiplyScalar(CONFIG.globeRadius * h);
+        var h2 = 1 + dist * 0.005 * 0.5;
+        var ctrl1 = new THREE.Vector3().addVectors(start, mid).normalize().multiplyScalar(CONFIG.globeRadius * h2);
+        var ctrl2 = new THREE.Vector3().addVectors(mid, end).normalize().multiplyScalar(CONFIG.globeRadius * h2);
+        
+        var curve = new THREE.CubicBezierCurve3(start, ctrl1, ctrl2, end);
+        var pts = curve.getPoints(CONFIG.arcDivisions);
+        
+        for (var i = 0; i < CONFIG.arcDivisions; i++) {
+          arcBloomVerts.push(pts[i], pts[i+1]);
+        }
+      }
+    });
+  });
+  
+  var geo = new THREE.BufferGeometry();
+  var pos = new Float32Array(arcBloomVerts.length * 3);
+  
+  for (var i = 0; i < arcBloomVerts.length; i++) {
+    pos[i*3] = arcBloomVerts[i].x;
+    pos[i*3+1] = arcBloomVerts[i].y;
+    pos[i*3+2] = arcBloomVerts[i].z;
+  }
+  
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  
+  var mat = new THREE.LineBasicMaterial({
+    color: colorAccent,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending,
+    fog: true,
+    depthWrite: false
+  });
+  
+  arcBloomMesh = new THREE.LineSegments(geo, mat);
+  arcBloomObject.add(arcBloomMesh);
+}
+
+function setArcMode(mode) {
+  currentMode = mode;
+  
+  document.querySelectorAll('#settings-left a').forEach(function(a) {
+    a.classList.remove('active');
+    if (a.classList.contains(mode)) a.classList.add('active');
+  });
+  
+  arcSnakeAnim.pause();
+  arcRocketAnim.pause();
+  
+  arcSnakeObject.visible = false;
+  arcRocketObject.visible = false;
+  arcBloomObject.visible = false;
+  
+  if (mode === 'snake') {
+    arcSnakeObject.visible = true;
+    arcSnakeAnim.play();
+  } else if (mode === 'rocket') {
+    arcRocketObject.visible = true;
+    arcRocketAnim.play();
+  } else if (mode === 'bloom') {
+    arcBloomObject.visible = true;
+  }
+}
+
+function setColors(scheme) {
+  document.querySelectorAll('#settings-right a').forEach(function(a) {
+    a.classList.remove('active');
+    if (a.classList.contains(scheme)) a.classList.add('active');
+  });
+  
+  var newBase, newAccent;
+  if (scheme === 'blue') {
+    newBase = new THREE.Color('#00CCFF');
+    newAccent = new THREE.Color('#FF1313');
+  } else if (scheme === 'invert') {
+    newBase = new THREE.Color('#FF1313');
+    newAccent = new THREE.Color('#00CCFF');
+  } else {
+    newBase = new THREE.Color().setHSL(Math.random(), 0.8, 0.5);
+    newAccent = new THREE.Color().setHSL(Math.random(), 0.8, 0.6);
+  }
+  
+  colorBase.copy(newBase);
+  colorAccent.copy(newAccent);
+  
+  // Update materials
+  globeInnerMesh.material.color.copy(newBase);
+  globeOuterMesh.material.color.copy(newBase);
+  arcSnakeMesh.material.uniforms.color.value.copy(newAccent);
+  arcRocketMesh.material.uniforms.color.value.copy(newAccent);
+  arcBloomMesh.material.color.copy(newAccent);
+  
+  dotSprites.forEach(function(d) { d.material.color.copy(newAccent); });
+}
+
+function toggleRotation() {
+  isAutoRotate = !isAutoRotate;
+  document.querySelector('#rotationMode a').classList.toggle('active', isAutoRotate);
+}
+
+function toggleSound() {
+  var btn = document.getElementById('soundButton');
+  btn.classList.toggle('on');
+  btn.classList.toggle('off');
+}
+
+function showInfo() {
+  document.getElementById('overlay').style.display = 'block';
+  document.querySelector('#overlay .content').style.display = 'block';
+  gsap.fromTo('#overlay', {opacity: 0}, {opacity: 1, duration: 0.5});
+  gsap.fromTo('#overlayRing', {scale: 0.8, opacity: 0}, {scale: 1, opacity: 1, duration: 0.6, ease: 'power2.out'});
+  gsap.fromTo('#overlayInner', {y: 30, opacity: 0}, {y: 0, opacity: 1, duration: 0.5, delay: 0.2});
+}
+
+function hideInfo() {
+  gsap.to('#overlay', {opacity: 0, duration: 0.3, onComplete: function() {
+    document.getElementById('overlay').style.display = 'none';
+  }});
+}
+
+function addEvents() {
+  var el = container;
+  
+  el.addEventListener('mousedown', function(e) {
+    isMouseDown = true;
+    mouseXOnDown = e.clientX - window.innerWidth/2;
+    mouseYOnDown = e.clientY - window.innerHeight/2;
+    targetRotationXOnDown = targetRotationX;
+    targetRotationYOnDown = targetRotationY;
+  });
+  
+  el.addEventListener('mousemove', function(e) {
+    if (isMouseDown) {
+      mouseX = e.clientX - window.innerWidth/2;
+      mouseY = e.clientY - window.innerHeight/2;
+      targetRotationY = targetRotationYOnDown + (mouseX - mouseXOnDown) * 0.005;
+      targetRotationX = targetRotationXOnDown + (mouseY - mouseYOnDown) * 0.005;
+    }
+  });
+  
+  el.addEventListener('mouseup', function() { isMouseDown = false; });
+  el.addEventListener('mouseleave', function() { isMouseDown = false; });
+  
+  // Touch
+  el.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) {
+      isMouseDown = true;
+      mouseXOnDown = e.touches[0].clientX - window.innerWidth/2;
+      mouseYOnDown = e.touches[0].clientY - window.innerHeight/2;
+      targetRotationXOnDown = targetRotationX;
+      targetRotationYOnDown = targetRotationY;
+    }
+  }, {passive: true});
+  
+  el.addEventListener('touchmove', function(e) {
+    if (isMouseDown && e.touches.length === 1) {
+      mouseX = e.touches[0].clientX - window.innerWidth/2;
+      mouseY = e.touches[0].clientY - window.innerHeight/2;
+      targetRotationY = targetRotationYOnDown + (mouseX - mouseXOnDown) * 0.005;
+      targetRotationX = targetRotationXOnDown + (mouseY - mouseYOnDown) * 0.005;
+    }
+  }, {passive: true});
+  
+  el.addEventListener('touchend', function() { isMouseDown = false; }, {passive: true});
+  
+  // Zoom
+  el.addEventListener('wheel', function(e) {
+    camera.position.z += e.deltaY * 0.1;
+    camera.position.z = Math.max(90, Math.min(400, camera.position.z));
+  }, {passive: true});
+  
+  // Resize
+  window.addEventListener('resize', function() {
+    var w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  });
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  
+  // Auto rotate
+  if (isAutoRotate && !isMouseDown) {
+    targetRotationY += CONFIG.autoRotateSpeed;
+  }
+  
+  // Smooth interpolation
+  rotationObject.rotation.x += (targetRotationX - rotationObject.rotation.x) * 0.1;
+  rotationObject.rotation.y += (targetRotationY - rotationObject.rotation.y) * 0.1;
+  
+  renderer.render(scene, camera);
+}
+
+// Start
+init();
 </script>
 </body>
 </html>
