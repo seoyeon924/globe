@@ -13,6 +13,11 @@
     .tag{font-size:9px;letter-spacing:.2em;color:#ff2060;text-transform:uppercase;margin-bottom:6px;text-shadow:0 0 20px #ff2060}
     h1{font-size:20px;font-weight:700;color:#fff;text-shadow:0 0 30px rgba(255,100,150,0.8)}
     .sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px}
+    #legend{margin-top:12px;display:flex;gap:15px;font-size:8px;color:rgba(255,255,255,0.5)}
+    .lg{display:flex;align-items:center;gap:5px}
+    .lg i{width:8px;height:8px;border-radius:50%}
+    .origin{background:#fff;box-shadow:0 0 8px #fff}
+    .dest{background:#00ccff;box-shadow:0 0 8px #00ccff}
   </style>
 </head>
 <body>
@@ -20,41 +25,73 @@
 <div id="ui">
   <div class="tag">Migration Flow 2024</div>
   <h1>GLOBAL MIGRATION</h1>
-  <div class="sub">Density: Red → White</div>
+  <div class="sub">Where refugees go</div>
+  <div id="legend">
+    <div class="lg"><i class="origin"></i>Origin</div>
+    <div class="lg"><i class="dest"></i>Destination</div>
+  </div>
 </div>
 <script>
 var hubs = [
-  {lat:35.0,lng:38.0},  // Syria
-  {lat:10.5,lng:-66.9}, // Venezuela
-  {lat:34.5,lng:69.2},  // Afghanistan
-  {lat:50.4,lng:30.5},  // Ukraine
-  {lat:15.5,lng:32.5},  // Sudan
-  {lat:12.0,lng:-1.5},  // Burkina Faso
-  {lat:16.0,lng:96.0},  // Myanmar
+  {lat:35.0,lng:38.0,name:'Syria'},
+  {lat:10.5,lng:-66.9,name:'Venezuela'},
+  {lat:34.5,lng:69.2,name:'Afghanistan'},
+  {lat:50.4,lng:30.5,name:'Ukraine'},
+  {lat:15.5,lng:32.5,name:'Sudan'},
+  {lat:12.0,lng:-1.5,name:'Burkina Faso'},
+  {lat:16.0,lng:96.0,name:'Myanmar'},
 ];
 
-// Generate destinations (reduced)
-var destinations = [];
-// Europe
-for(var i=0;i<15;i++) destinations.push({lat:45+Math.random()*18,lng:-5+Math.random()*35});
-// Middle East
-for(var i=0;i<8;i++) destinations.push({lat:28+Math.random()*12,lng:35+Math.random()*20});
-// Americas
-for(var i=0;i<10;i++) destinations.push({lat:-20+Math.random()*60,lng:-100+Math.random()*50});
-// Asia Pacific
-for(var i=0;i<6;i++) destinations.push({lat:-30+Math.random()*50,lng:110+Math.random()*60});
-// Africa
-for(var i=0;i<8;i++) destinations.push({lat:-20+Math.random()*40,lng:0+Math.random()*40});
+// Fixed destinations with names
+var destinations = [
+  // Europe (top destinations)
+  {lat:52.5,lng:13.4,name:'Germany',count:0},
+  {lat:48.9,lng:2.4,name:'France',count:0},
+  {lat:51.5,lng:-0.1,name:'UK',count:0},
+  {lat:41.9,lng:12.5,name:'Italy',count:0},
+  {lat:40.4,lng:-3.7,name:'Spain',count:0},
+  {lat:52.2,lng:21.0,name:'Poland',count:0},
+  {lat:59.3,lng:18.1,name:'Sweden',count:0},
+  {lat:52.4,lng:4.9,name:'Netherlands',count:0},
+  {lat:48.2,lng:16.4,name:'Austria',count:0},
+  {lat:46.9,lng:7.4,name:'Switzerland',count:0},
+  {lat:50.8,lng:4.4,name:'Belgium',count:0},
+  {lat:38.7,lng:-9.1,name:'Portugal',count:0},
+  {lat:37.98,lng:23.7,name:'Greece',count:0},
+  // Middle East
+  {lat:41.0,lng:29.0,name:'Turkey',count:0},
+  {lat:33.9,lng:35.5,name:'Lebanon',count:0},
+  {lat:31.9,lng:35.9,name:'Jordan',count:0},
+  {lat:30.0,lng:31.2,name:'Egypt',count:0},
+  // Americas
+  {lat:40.7,lng:-74.0,name:'USA-NY',count:0},
+  {lat:34.1,lng:-118.2,name:'USA-LA',count:0},
+  {lat:43.7,lng:-79.4,name:'Canada',count:0},
+  {lat:4.6,lng:-74.1,name:'Colombia',count:0},
+  {lat:-12.0,lng:-77.0,name:'Peru',count:0},
+  {lat:-23.6,lng:-46.6,name:'Brazil',count:0},
+  {lat:-33.5,lng:-70.7,name:'Chile',count:0},
+  // Asia Pacific
+  {lat:-33.9,lng:151.2,name:'Australia',count:0},
+  {lat:33.7,lng:73.1,name:'Pakistan',count:0},
+  {lat:35.7,lng:51.4,name:'Iran',count:0},
+  // Africa
+  {lat:0.3,lng:32.6,name:'Uganda',count:0},
+  {lat:-1.3,lng:36.8,name:'Kenya',count:0},
+  {lat:9.0,lng:38.7,name:'Ethiopia',count:0},
+  {lat:-26.2,lng:28.0,name:'South Africa',count:0},
+];
 
-// Generate arcs (~200)
+// Generate arcs and count destinations
 var arcs = [];
 hubs.forEach(function(hub) {
   destinations.forEach(function(dest) {
     var dist = Math.sqrt(Math.pow(hub.lat-dest.lat,2) + Math.pow(hub.lng-dest.lng,2));
-    if (dist > 8 && Math.random() > 0.35) {
+    if (dist > 5 && Math.random() > 0.3) {
+      dest.count++;
       arcs.push({
-        startLat: hub.lat + (Math.random()-0.5)*1.5,
-        startLng: hub.lng + (Math.random()-0.5)*1.5,
+        startLat: hub.lat + (Math.random()-0.5)*1,
+        startLng: hub.lng + (Math.random()-0.5)*1,
         endLat: dest.lat,
         endLng: dest.lng,
         dist: dist
@@ -63,17 +100,49 @@ hubs.forEach(function(hub) {
   });
 });
 
-// Hub glow - VERY bright white center
-var glowPoints = [];
+// Find max count for normalization
+var maxCount = Math.max.apply(null, destinations.map(function(d){return d.count}));
+
+// Create points array
+var allPoints = [];
+
+// Hub points (origin - white/red glow)
 hubs.forEach(function(h) {
-  // Bright white core
-  glowPoints.push({lat:h.lat,lng:h.lng,size:0.6,color:'rgba(255,255,255,1)',alt:0.05});
-  glowPoints.push({lat:h.lat,lng:h.lng,size:1.0,color:'rgba(255,255,255,0.9)',alt:0.04});
-  glowPoints.push({lat:h.lat,lng:h.lng,size:1.5,color:'rgba(255,230,240,0.7)',alt:0.03});
-  glowPoints.push({lat:h.lat,lng:h.lng,size:2.2,color:'rgba(255,180,200,0.5)',alt:0.025});
-  glowPoints.push({lat:h.lat,lng:h.lng,size:3.0,color:'rgba(255,100,140,0.35)',alt:0.02});
-  glowPoints.push({lat:h.lat,lng:h.lng,size:4.0,color:'rgba(255,50,90,0.2)',alt:0.015});
-  glowPoints.push({lat:h.lat,lng:h.lng,size:5.5,color:'rgba(255,30,70,0.1)',alt:0.01});
+  allPoints.push({lat:h.lat,lng:h.lng,size:0.5,color:'rgba(255,255,255,1)',alt:0.04});
+  allPoints.push({lat:h.lat,lng:h.lng,size:0.9,color:'rgba(255,255,255,0.8)',alt:0.035});
+  allPoints.push({lat:h.lat,lng:h.lng,size:1.4,color:'rgba(255,200,210,0.6)',alt:0.03});
+  allPoints.push({lat:h.lat,lng:h.lng,size:2.0,color:'rgba(255,100,140,0.4)',alt:0.025});
+  allPoints.push({lat:h.lat,lng:h.lng,size:3.0,color:'rgba(255,50,80,0.2)',alt:0.02});
+});
+
+// Destination points (cyan glow - size based on immigrant count)
+destinations.forEach(function(d) {
+  if (d.count > 0) {
+    var intensity = d.count / maxCount;
+    var baseSize = 0.3 + intensity * 1.2;
+    
+    // Core
+    allPoints.push({
+      lat:d.lat,lng:d.lng,
+      size:baseSize * 0.4,
+      color:'rgba(150,255,255,'+(0.7+intensity*0.3)+')',
+      alt:0.025
+    });
+    // Mid glow
+    allPoints.push({
+      lat:d.lat,lng:d.lng,
+      size:baseSize * 0.7,
+      color:'rgba(80,220,255,'+(0.4+intensity*0.3)+')',
+      alt:0.02
+    });
+    // Outer glow
+    allPoints.push({
+      lat:d.lat,lng:d.lng,
+      size:baseSize,
+      color:'rgba(0,180,255,'+(0.15+intensity*0.2)+')',
+      alt:0.015
+    });
+  }
 });
 
 var globe = Globe()
@@ -83,23 +152,23 @@ var globe = Globe()
   .atmosphereColor('#003355')
   .atmosphereAltitude(0.08)
   
-  // Many thin arcs
+  // Arcs
   .arcsData(arcs)
   .arcStartLat('startLat')
   .arcStartLng('startLng')
   .arcEndLat('endLat')
   .arcEndLng('endLng')
   .arcColor(function() {
-    return ['rgba(255,200,220,0.7)', 'rgba(255,40,80,0.3)'];
+    return ['rgba(255,180,200,0.6)', 'rgba(255,40,80,0.25)'];
   })
-  .arcStroke(0.15) // Thinner
-  .arcAltitude(function(d) { return 0.08 + d.dist * 0.0025; })
+  .arcStroke(0.12)
+  .arcAltitude(function(d) { return 0.06 + d.dist * 0.002; })
   .arcDashLength(0.4)
-  .arcDashGap(0.08)
-  .arcDashAnimateTime(5500)
+  .arcDashGap(0.1)
+  .arcDashAnimateTime(5000)
   
-  // Bright hub glows
-  .pointsData(glowPoints)
+  // All points (hubs + destinations)
+  .pointsData(allPoints)
   .pointLat('lat')
   .pointLng('lng')
   .pointRadius('size')
@@ -110,7 +179,7 @@ var globe = Globe()
 
 globe.controls().autoRotate = true;
 globe.controls().autoRotateSpeed = 0.06;
-globe.pointOfView({lat:30,lng:35,altitude:1.9});
+globe.pointOfView({lat:30,lng:20,altitude:2.0});
 
 window.onresize = function(){
   globe.width(window.innerWidth);
