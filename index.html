@@ -1655,6 +1655,11 @@ function createStarfield() {
   var sizes = new Float32Array(starCount);
   var colors = new Float32Array(starCount * 3);
   
+  var cameraDirection = camera.position.clone().normalize();
+  var cameraX = cameraDirection.x;
+  var cameraY = cameraDirection.y;
+  var cameraZ = cameraDirection.z;
+
   for (var i = 0; i < starCount; i++) {
     // Distribute stars in a sphere around the scene
     var radius = 300 + Math.random() * 400;
@@ -1666,6 +1671,12 @@ function createStarfield() {
     positions[i*3+2] = radius * Math.cos(phi);
     
     sizes[i] = 10 + Math.random() * 20;
+
+    // Make stars on the hemisphere behind the earth 3x smaller (camera-based)
+    var dot = positions[i*3] * cameraX + positions[i*3+1] * cameraY + positions[i*3+2] * cameraZ;
+    if (dot < 0) {
+      sizes[i] /= 3;
+    }
     
     // Blue + white mix
     var colorChoice = Math.random();
