@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
   <title>GLOBAL MIGRATION</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
     body{
-      background:#000;
-      color:#00CCFF;
+      background:#0a0a0a;
+      color:#ffffff;
       overflow:hidden;
-      font-family:system-ui,-apple-system,sans-serif;
+      font-family:'Inter',system-ui,sans-serif;
       text-transform:uppercase;
     }
     a{color:#00CCFF;text-decoration:none;transition:color 0.3s}
@@ -43,15 +44,29 @@
     .faded50{opacity:0.5}
     .faded75{opacity:0.25}
     
-    /* Header - LAUNCH IT style */
+    /* Header - PROJECTY style */
     #header{
-      position:fixed;top:25px;left:50%;
-      transform:translateX(-50%);
-      text-align:center;
-      text-shadow:0 0 10px rgba(0,0,0,0.8);
+      position:fixed;top:40px;left:40px;
+      text-align:left;
+      text-decoration:none;
     }
-    #header strong{font-size:34px;letter-spacing:2px}
-    #header .subtitle{opacity:0.55;font-size:12px;margin-top:4px}
+    #header strong{
+      font-family:'Bebas Neue',sans-serif;
+      font-size:72px;
+      letter-spacing:4px;
+      color:#fff;
+      line-height:0.9;
+      display:block;
+    }
+    #header .subtitle{
+      font-family:'Inter',sans-serif;
+      font-weight:300;
+      font-size:14px;
+      color:rgba(255,255,255,0.5);
+      margin-top:12px;
+      text-transform:none;
+      letter-spacing:0;
+    }
     
     /* Navigation */
     #nav{position:fixed;top:50%;left:0;width:100%;pointer-events:none}
@@ -423,8 +438,8 @@
   </div>
   
   <a href="#" id="header">
-    <div><strong>GLOBAL MIGRATION</strong></div>
-    <div class="subtitle">REFUGEE FLOWS 2024</div>
+    <div><strong>MIGRATION<br>TRACKER</strong></div>
+    <div class="subtitle">Real-time global refugee and displacement monitoring system.</div>
   </a>
   
   <!-- GOD'S EYE HUD PANELS -->
@@ -857,18 +872,31 @@ function createGlobe() {
   var wireMesh = new THREE.Mesh(wireGeo, wireMat);
   earthObject.add(wireMesh);
   
-  // Atmosphere glow
-  var glowGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.08, 24, 24);
+  // Atmosphere glow - orange/gold like reference
+  var glowGeo = new THREE.SphereGeometry(CONFIG.globeRadius * 1.12, 32, 32);
   var glowMat = new THREE.MeshBasicMaterial({
-    color: colorBase,
+    color: 0xff8c00,
     transparent: true,
     blending: THREE.AdditiveBlending,
     side: THREE.BackSide,
-    opacity: 0.1,
+    opacity: 0.15,
     depthWrite: false
   });
   var glowMesh = new THREE.Mesh(glowGeo, glowMat);
   earthObject.add(glowMesh);
+  
+  // Second glow layer for rim light
+  var glowGeo2 = new THREE.SphereGeometry(CONFIG.globeRadius * 1.05, 32, 32);
+  var glowMat2 = new THREE.MeshBasicMaterial({
+    color: 0xffa500,
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+    opacity: 0.08,
+    depthWrite: false
+  });
+  var glowMesh2 = new THREE.Mesh(glowGeo2, glowMat2);
+  earthObject.add(glowMesh2);
   
   // Shield for lighting interaction
   var shieldMat = new THREE.MeshPhongMaterial({
@@ -957,18 +985,24 @@ function createGlowTexture(color, softness) {
 function createDots() {
   // Create textures for different dot types
   var glowTexWhite = createGlowTexture('rgba(255,255,255,1)', 0.2);
-  var glowTexRed = createGlowTexture('rgba(255,50,50,1)', 0.3);
-  var glowTexSoft = createGlowTexture('rgba(255,100,100,1)', 0.5);
+  var glowTexRed = createGlowTexture('rgba(255,50,50,1)', 0.3);    // Outflow (emigration)
+  var glowTexGreen = createGlowTexture('rgba(50,255,100,1)', 0.3); // Inflow (immigration)
+  var glowTexRedSoft = createGlowTexture('rgba(255,100,100,1)', 0.5);
+  var glowTexGreenSoft = createGlowTexture('rgba(100,255,150,1)', 0.5);
   
   var dotGeo = new THREE.PlaneGeometry(1, 1);
   
   LOCATIONS.forEach(function(loc, i) {
     var pos = latLngToVec3(loc.lat, loc.lng, CONFIG.globeRadius, 0.5);
     
-    // Main dot with circular texture
+    // Type 2 = Outflow (RED), Type 1 = Inflow (GREEN)
+    var isOutflow = loc.type === 2;
+    var dotColor = isOutflow ? 0xff3333 : 0x33ff66;
+    var dotTex = isOutflow ? glowTexRed : glowTexGreen;
+    
     var dotMat = new THREE.MeshBasicMaterial({
-      map: glowTexRed,
-      color: colorAccent,
+      map: dotTex,
+      color: dotColor,
       transparent: true,
       blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
@@ -980,7 +1014,7 @@ function createDots() {
     dot.position.copy(pos);
     dot.lookAt(new THREE.Vector3(0,0,0));
     
-    var scale = loc.type === 2 ? 4 : 2.5;
+    var scale = isOutflow ? 4 : 2.5;
     dot.scale.set(scale, scale, scale);
     
     dot.userData = {id: i, name: loc.name, type: loc.type};
@@ -1006,9 +1040,9 @@ function createDots() {
       core.scale.set(2, 2, 2);
       earthObject.add(core);
       
-      // Medium glow
+      // Medium glow - RED for outflow
       var glowMat1 = new THREE.MeshBasicMaterial({
-        map: glowTexSoft,
+        map: glowTexRedSoft,
         color: 0xff4444,
         transparent: true,
         blending: THREE.AdditiveBlending,
@@ -1022,9 +1056,9 @@ function createDots() {
       glow1.scale.set(8, 8, 8);
       earthObject.add(glow1);
       
-      // Outer glow
+      // Outer glow - RED for outflow
       var glowMat2 = new THREE.MeshBasicMaterial({
-        map: glowTexSoft,
+        map: glowTexRedSoft,
         color: 0xff2222,
         transparent: true,
         blending: THREE.AdditiveBlending,
