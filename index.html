@@ -8,7 +8,7 @@
     @import url('https://fonts.googleapis.com/css2?family=Michroma&display=swap');
     *{margin:0;padding:0;box-sizing:border-box}
     body{
-      background:#0a0a0a;
+      background: radial-gradient(ellipse at 30% 20%, #0d1a2d 0%, #0a0a12 35%, #050508 70%, #000000 100%);
       color:#ffffff;
       overflow:hidden;
       font-family:'Michroma',system-ui,sans-serif;
@@ -1518,7 +1518,7 @@ async function init() {
   renderer = new THREE.WebGLRenderer({antialias: false, alpha: false, powerPreference: 'high-performance'});
   renderer.setSize(w, h);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(0x000000, 1);
+  renderer.setClearColor(0x050508, 1);
   container.appendChild(renderer.domElement);
   
   createGroups();
@@ -1665,7 +1665,7 @@ function createStarfield() {
     positions[i*3+1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i*3+2] = radius * Math.cos(phi);
     
-    sizes[i] = 3 + Math.random() * 6;
+    sizes[i] = 10 + Math.random() * 20;
     
     // Blue + white mix
     var colorChoice = Math.random();
