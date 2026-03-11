@@ -254,16 +254,8 @@
     .kpi-num.cyan{color:#00FFCC}
     .kpi-label{color:#00CCFF;font-size:7px;opacity:0.6;margin-top:2px}
     
-    /* COUNTRY DETAIL VIEW */
-    #country-detail{
-      display:none;
-      position:fixed;top:0;left:0;right:0;bottom:0;
-      background:rgba(0,0,0,0.95);
-      z-index:200;
-      padding:40px;
-      overflow-y:auto;
-    }
-    #country-detail.active{display:block}
+    /* COUNTRY DETAIL VIEW - hidden, using inline panel instead */
+    #country-detail{display:none !important}
     .detail-close{
       position:absolute;top:20px;right:30px;
       font-size:24px;color:#fff;cursor:pointer;
@@ -557,17 +549,23 @@
   <div id="data-panel">
     <div class="scanline"></div>
     
+    <!-- Country Title (shown when selected) -->
+    <div id="panel-country-header" style="display:none;margin-bottom:12px">
+      <div id="panel-country-name" style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:#fff;letter-spacing:2px"></div>
+      <div id="panel-country-status" style="display:inline-block;padding:2px 8px;background:#ff3333;color:#fff;font-size:8px;margin-top:4px"></div>
+    </div>
+    
     <!-- KPI Summary -->
     <div class="data-section">
-      <div class="data-title">GLOBAL KPI</div>
+      <div class="data-title" id="kpi-title">GLOBAL KPI</div>
       <div class="kpi-grid">
         <div class="kpi-card">
-          <div class="kpi-num">7.6M</div>
-          <div class="kpi-label">OUTFLOW</div>
+          <div class="kpi-num" id="kpi-outflow">7.6M</div>
+          <div class="kpi-label" id="kpi-outflow-label">OUTFLOW</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-num cyan">5.2M</div>
-          <div class="kpi-label">INFLOW</div>
+          <div class="kpi-num cyan" id="kpi-inflow">5.2M</div>
+          <div class="kpi-label" id="kpi-inflow-label">INFLOW</div>
         </div>
       </div>
     </div>
@@ -584,6 +582,18 @@
         <option value="sudan">SUDAN</option>
         <option value="myanmar">MYANMAR</option>
       </select>
+    </div>
+    
+    <!-- Crisis Info (shown when country selected) -->
+    <div id="panel-crisis-info" class="data-section" style="display:none">
+      <div class="data-title">// CRISIS</div>
+      <div id="panel-crisis-text" style="font-size:9px;color:rgba(255,255,255,0.6);line-height:1.5;text-transform:none"></div>
+    </div>
+    
+    <!-- Mini Trend Chart -->
+    <div id="panel-trend" class="data-section" style="display:none">
+      <div class="data-title">// TREND 2015-2024</div>
+      <div id="panel-trend-chart" style="display:flex;align-items:flex-end;gap:3px;height:50px"></div>
     </div>
     
     <!-- Outflow Chart -->
@@ -1758,6 +1768,59 @@ function closeCountryDetail() {
   document.getElementById('country-detail').classList.remove('active');
 }
 
+// Update right panel with country data (inline, no fullscreen)
+function updatePanelWithCountry(country) {
+  var data = COUNTRY_DATA[country];
+  if (!data) return;
+  
+  // Show country header
+  document.getElementById('panel-country-header').style.display = 'block';
+  document.getElementById('panel-country-name').textContent = data.name;
+  document.getElementById('panel-country-status').textContent = data.type === 'outflow' ? 'OUTFLOW CRISIS' : 'INFLOW';
+  document.getElementById('panel-country-status').style.background = data.type === 'outflow' ? '#ff3333' : '#00FFCC';
+  document.getElementById('panel-country-status').style.color = data.type === 'outflow' ? '#fff' : '#000';
+  
+  // Update KPI
+  document.getElementById('kpi-title').textContent = data.name + ' KPI';
+  document.getElementById('kpi-outflow').textContent = data.total;
+  document.getElementById('kpi-outflow-label').textContent = 'DISPLACED';
+  document.getElementById('kpi-inflow').textContent = data.refugees;
+  document.getElementById('kpi-inflow-label').textContent = 'REFUGEES';
+  
+  // Show crisis info
+  document.getElementById('panel-crisis-info').style.display = 'block';
+  var shortText = data.event.substring(0, 150) + '...';
+  document.getElementById('panel-crisis-text').textContent = shortText;
+  
+  // Show mini trend chart
+  document.getElementById('panel-trend').style.display = 'block';
+  var chartHtml = '';
+  var maxVal = Math.max.apply(null, data.trend);
+  data.trend.forEach(function(val) {
+    var h = maxVal > 0 ? (val / maxVal * 40) : 0;
+    var barColor = data.type === 'outflow' ? '#ff3333' : '#00FFCC';
+    chartHtml += '<div style="flex:1;height:' + h + 'px;background:' + barColor + ';border-radius:1px"></div>';
+  });
+  document.getElementById('panel-trend-chart').innerHTML = chartHtml;
+}
+
+// Reset panel to global view
+function resetPanelToGlobal() {
+  document.getElementById('panel-country-header').style.display = 'none';
+  document.getElementById('kpi-title').textContent = 'GLOBAL KPI';
+  document.getElementById('kpi-outflow').textContent = '7.6M';
+  document.getElementById('kpi-outflow-label').textContent = 'OUTFLOW';
+  document.getElementById('kpi-inflow').textContent = '5.2M';
+  document.getElementById('kpi-inflow-label').textContent = 'INFLOW';
+  document.getElementById('panel-crisis-info').style.display = 'none';
+  document.getElementById('panel-trend').style.display = 'none';
+  
+  // Reset bar chart highlights
+  document.querySelectorAll('.bar-row').forEach(function(row) {
+    row.style.opacity = '1';
+  });
+}
+
 // Country filter function
 function filterCountry(country) {
   var countryCoords = {
@@ -1774,10 +1837,10 @@ function filterCountry(country) {
     gsap.to(camera.position, {z: 250, duration: 1, ease: 'power2.out'});
     targetRotationX = 0.45;
     targetRotationY = 65 * Math.PI/180;
-    closeCountryDetail();
+    resetPanelToGlobal();
   } else if (countryCoords[country]) {
-    // Show country detail view
-    showCountryDetail(country);
+    // Update panel with country data (no fullscreen)
+    updatePanelWithCountry(country);
     var c = countryCoords[country];
     // Rotate globe to focus on country
     targetRotationY = -(c.lng + 90) * Math.PI/180;
