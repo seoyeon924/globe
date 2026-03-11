@@ -128,10 +128,29 @@
     
     /* Tooltip */
     #tooltip{
-      display:none;position:fixed;
-      padding:0 10px;background:#00CCFF;color:#000;
-      font-size:14px;line-height:25px;white-space:nowrap;
+      display:none;visibility:hidden;opacity:0;
+      position:fixed;
+      padding:8px 12px;
+      background:transparent;
+      font-size:12px;line-height:18px;
+      white-space:nowrap;
       z-index:100;
+      text-transform:uppercase;
+      text-shadow:0 0 10px rgba(0,0,0,0.8);
+      transition:opacity 0.3s;
+    }
+    #tooltip .label{
+      color:#00CCFF;
+      font-weight:500;
+    }
+    #tooltip.visible{
+      display:block;visibility:visible;opacity:1;
+    }
+    
+    /* Cross lines */
+    .cross{
+      stroke-width:0.5;
+      transition:opacity 0.3s, visibility 0.3s;
     }
     
     /* Location display */
@@ -240,6 +259,12 @@
   <div id="ui">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" style="transform:rotate(-90deg)">
       <defs>
+        <linearGradient id="glowInner" x1="0" x2="0" y1="0" y2="1">
+          <stop class="svg-stop" offset="0%" stop-color="#FF1313"/>
+          <stop class="svg-stop svg-stop-fade" offset="10%" stop-color="#FF1313"/>
+          <stop class="svg-stop svg-stop-fade" offset="90%" stop-color="#FF1313"/>
+          <stop class="svg-stop" offset="100%" stop-color="#FF1313"/>
+        </linearGradient>
         <linearGradient id="linearInner">
           <stop class="svg-stop" offset="0%"/>
           <stop class="svg-stop svg-stop-fade" offset="35%"/>
@@ -255,8 +280,11 @@
       <circle cx="500" cy="500" r="380" stroke="url(#linearInner)" stroke-width="0.25" fill="none" class="faded50" id="bracket-inner"/>
       <circle cx="500" cy="500" r="499" stroke="url(#linearOuter)" stroke-width="0.5" fill="none" class="faded50"/>
       <circle cx="500" cy="500" r="490" stroke="url(#linearOuter)" stroke-width="0.5" fill="none" class="faded75"/>
-      <circle cx="500" cy="500" r="490" stroke="#00CCFF" stroke-width="1" fill="none" class="svg-ring faded50" id="bracket-left" style="stroke-dasharray:308,3090;stroke-dashoffset:-616"/>
-      <circle cx="500" cy="500" r="490" stroke="#00CCFF" stroke-width="1" fill="none" class="svg-ring faded50" id="bracket-right" style="stroke-dasharray:308,3090;stroke-dashoffset:-2156"/>
+      <circle cx="500" cy="500" r="490" stroke="#00CCFF" stroke-width="1" fill="none" class="svg-ring faded50" id="bracket-left" style="stroke-dasharray:307.976,3089.76;stroke-dashoffset:-615.952"/>
+      <circle cx="500" cy="500" r="490" stroke="#00CCFF" stroke-width="1" fill="none" class="svg-ring faded50" id="bracket-right" style="stroke-dasharray:307.976,3089.76;stroke-dashoffset:-2155.83"/>
+      <!-- Cross lines (hidden by default) -->
+      <line fill="none" stroke="#00CCFF" x1="150" y1="150" x2="850" y2="850" class="cross" id="cross1" style="visibility:hidden;opacity:0"/>
+      <line fill="none" stroke="#00CCFF" x1="150" y1="850" x2="850" y2="150" class="cross" id="cross2" style="visibility:hidden;opacity:0"/>
     </svg>
   </div>
   
@@ -385,7 +413,7 @@
     <div class="booktype"></div>
   </div>
   
-  <div id="tooltip"></div>
+  <div id="tooltip"><div class="label"></div></div>
   
   <!-- Overlay Modal -->
   <div id="overlay">
